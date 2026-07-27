@@ -128,6 +128,7 @@
   const SEED_ENTRIES = [];
   const LS_CFG = 'mt-github-cfg';
 
+  let autoFocusPending = true;
   let cfg = null; // { user, repo, token }
   let sha = null; // current data.json sha, for updates
   const LS_QUEUE = 'mt-offline-queue';
@@ -431,6 +432,7 @@
     if (nextBtn) nextBtn.onclick = () => { state.currentDate = shiftDate(state.currentDate, 1); render(); };
 
     document.getElementById('mt-add-btn').onclick = async () => {
+      if (document.activeElement) document.activeElement.blur();
       const now = new Date();
       const timeStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
       let entry;
@@ -474,7 +476,7 @@
     };
 
     root.querySelectorAll('.mt-tab').forEach(btn => {
-      btn.onclick = () => { state.entryTab = btn.dataset.tab; render(); };
+      btn.onclick = () => { state.entryTab = btn.dataset.tab; autoFocusPending = true; render(); };
     });
     root.querySelectorAll('.mt-sev-btn').forEach(btn => {
       btn.onclick = () => { state.severity = btn.dataset.sev; render(); };
@@ -485,7 +487,7 @@
     const activeInput = nameInput || symptomInput;
     if (activeInput) {
       activeInput.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') document.getElementById('mt-add-btn').click(); });
-      activeInput.focus();
+      if (autoFocusPending) { activeInput.focus(); autoFocusPending = false; }
     }
     if (nameInput) {
       // default meal to whatever fits the time of day
