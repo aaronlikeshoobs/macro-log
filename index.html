@@ -91,6 +91,19 @@
 
   .mt-note { font-family: var(--font-mono); font-size: 11px; color: var(--muted); background: var(--panel); border-left: 3px solid var(--ink); padding: 8px 10px; margin-bottom: 20px; }
   .mt-loading { text-align: center; padding: 60px 0; font-family: var(--font-mono); color: var(--muted); }
+
+  .mt-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+  .mt-tab { flex: 1; text-align: center; padding: 10px 6px; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; border: 1px solid var(--line); background: var(--bg); color: var(--muted); cursor: pointer; border-radius: 4px; min-height: 40px; display: flex; align-items: center; justify-content: center; }
+  .mt-tab.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .mt-tab.symptom-active { background: var(--over); color: #fff; border-color: var(--over); }
+
+  .mt-sev-row { display: flex; gap: 6px; margin-bottom: 8px; }
+  .mt-sev-btn { flex: 1; padding: 9px 4px; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; border: 1px solid #C9C4B4; background: #fff; color: var(--ink); cursor: pointer; border-radius: 4px; min-height: 40px; }
+  .mt-sev-btn.active { background: var(--over); border-color: var(--over); color: #fff; }
+
+  .mt-symptom-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13px; background: #FBF0EE; margin: 0 -12px; padding-left: 12px; padding-right: 6px; }
+  .mt-symptom-tag { display: inline-block; font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.04em; background: var(--over); color: #fff; padding: 2px 6px; border-radius: 3px; margin-right: 8px; }
+  .mt-hist-symptom-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--over); display: inline-block; margin-left: 6px; }
   .mt-fab { position: fixed; right: 18px; bottom: max(18px, env(safe-area-inset-bottom)); width: 56px; height: 56px; border-radius: 50%; background: var(--ink); color: var(--bg); border: none; font-size: 28px; line-height: 1; cursor: pointer; box-shadow: 0 4px 14px rgba(26,26,26,0.35); z-index: 5; display: flex; align-items: center; justify-content: center; }
   .mt-sync { font-family: var(--font-mono); font-size: 10px; color: var(--muted); text-align: right; margin-top: -12px; margin-bottom: 16px; }
   .mt-sync.err { color: var(--over); }
@@ -118,7 +131,7 @@
   let cfg = null; // { user, repo, token }
   let sha = null; // current data.json sha, for updates
   const LS_QUEUE = 'mt-offline-queue';
-  let state = { entries: SEED_ENTRIES, targets: DEFAULT_TARGETS, currentDate: todayStr(), loaded: false, syncErr: null, syncing: false };
+  let state = { entries: SEED_ENTRIES, targets: DEFAULT_TARGETS, currentDate: todayStr(), loaded: false, syncErr: null, syncing: false, entryTab: 'meal', severity: 'Mild' };
 
   function loadQueue() { try { return JSON.parse(localStorage.getItem(LS_QUEUE) || '[]'); } catch(e) { return []; } }
   function saveQueue(q) { localStorage.setItem(LS_QUEUE, JSON.stringify(q)); }
@@ -257,12 +270,15 @@
     const t = totalsFor(state.currentDate);
     const tg = state.targets;
     const { label: dateLabel, isToday } = fmtDateLabel(state.currentDate);
-    const dayEntries = state.entries.filter(e => e.date === state.currentDate).sort((a,b) => (a.time||'').localeCompare(b.time||''));
+    const dayEntriesAll = state.entries.filter(e => e.date === state.currentDate).sort((a,b) => (a.time||'').localeCompare(b.time||''));
+    const dayEntries = dayEntriesAll.filter(e => e.kind !== 'symptom');
+    const daySymptoms = dayEntriesAll.filter(e => e.kind === 'symptom');
     const mealGroups = {};
     dayEntries.forEach(e => { (mealGroups[e.meal] = mealGroups[e.meal] || []).push(e); });
     const calOver = t.cal > tg.cal;
 
     const allDates = Array.from(new Set(state.entries.map(e => e.date))).sort();
+    const symptomDates = new Set(state.entries.filter(e => e.kind === 'symptom').map(e => e.date));
     const dateSet = new Set(allDates);
     let streak = 0;
     { let d = todayStr(); if (!dateSet.has(d)) d = shiftDate(d, -1);
@@ -298,21 +314,47 @@
         </div>
       </div>
 
-      <div class="mt-section-title">Log a Meal</div>
+      <div class="mt-section-title">Log an Entry</div>
+      <div class="mt-tabs">
+        <button class="mt-tab ${state.entryTab==='meal' ? 'active' : ''}" data-tab="meal">Meal</button>
+        <button class="mt-tab ${state.entryTab==='symptom' ? 'symptom-active' : ''}" data-tab="symptom">Upset stomach / BM</button>
+      </div>
       <div class="mt-form">
-        <div class="mt-form-row">
-          <div class="mt-form-name" style="flex:3 1 220px;"><label>What did you eat?</label><input id="mt-in-name" type="text" placeholder="e.g. Turkey chili, one bowl, no cheese" autocapitalize="sentences" autocomplete="off" autocorrect="on" enterkeyhint="done" /></div>
-          <div class="mt-form-meal"><label>Meal</label>
-            <select id="mt-in-meal"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option></select>
+        ${state.entryTab === 'meal' ? `
+          <div class="mt-form-row">
+            <div class="mt-form-name" style="flex:3 1 220px;"><label>What did you eat?</label><input id="mt-in-name" type="text" placeholder="e.g. Turkey chili, one bowl, no cheese" autocapitalize="sentences" autocomplete="off" autocorrect="on" enterkeyhint="done" /></div>
+            <div class="mt-form-meal"><label>Meal</label>
+              <select id="mt-in-meal"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option></select>
+            </div>
           </div>
-        </div>
-        <button class="mt-add-btn" id="mt-add-btn" ${state.syncing?'disabled':''}>${state.syncing ? 'Saving\u2026' : `+ Add to ${isToday ? "today's" : "this day's"} log`}</button>
+        ` : `
+          <label style="font-family:var(--font-mono); font-size:9px; text-transform:uppercase; color:var(--muted); letter-spacing:0.05em; display:block; margin-bottom:5px;">Type</label>
+          <select id="mt-in-symptype" style="font-size:16px; padding:12px 10px; border:1px solid #C9C4B4; width:100%; border-radius:4px; min-height:44px; margin-bottom:8px;">
+            <option>Upset stomach</option><option>Loose stool / diarrhea</option><option>Constipation</option><option>Bloating / gas</option><option>Nausea</option><option>Other</option>
+          </select>
+          <label style="font-family:var(--font-mono); font-size:9px; text-transform:uppercase; color:var(--muted); letter-spacing:0.05em; display:block; margin-bottom:5px;">Severity</label>
+          <div class="mt-sev-row">
+            <button type="button" class="mt-sev-btn ${state.severity==='Mild'?'active':''}" data-sev="Mild">Mild</button>
+            <button type="button" class="mt-sev-btn ${state.severity==='Moderate'?'active':''}" data-sev="Moderate">Moderate</button>
+            <button type="button" class="mt-sev-btn ${state.severity==='Severe'?'active':''}" data-sev="Severe">Severe</button>
+          </div>
+          <label style="font-family:var(--font-mono); font-size:9px; text-transform:uppercase; color:var(--muted); letter-spacing:0.05em; display:block; margin-bottom:5px;">Notes (optional)</label>
+          <input id="mt-in-symptom" type="text" placeholder="e.g. started ~2pm, about an hour after lunch" autocapitalize="sentences" autocomplete="off" enterkeyhint="done" style="margin-bottom:0;" />
+        `}
+        <button class="mt-add-btn" id="mt-add-btn" style="margin-top:10px; ${state.entryTab==='symptom' ? 'background:var(--over);' : ''}" ${state.syncing?'disabled':''}>${state.syncing ? 'Saving\u2026' : (state.entryTab === 'meal' ? `+ Add to ${isToday ? "today's" : "this day's"} log` : '+ Log symptom')}</button>
       </div>
       <div class="mt-sync ${state.syncErr ? 'err' : ''}">${state.syncErr ? 'Sync error: ' + escapeHtml(state.syncErr) : 'Synced to GitHub &middot; macros estimated by Claude'}</div>
 
       <div class="mt-section-title">Entries &mdash; ${dateLabel}</div>
       <div id="mt-log-list">
-        ${dayEntries.length === 0 ? '<div class="mt-empty">Nothing logged yet.</div>' :
+        ${daySymptoms.length ? daySymptoms.map(s => `
+          <div class="mt-symptom-item">
+            <div><span class="mt-symptom-tag">${escapeHtml(s.severity)}</span>${escapeHtml(s.type)}${s.note ? ' &mdash; ' + escapeHtml(s.note) : ''}</div>
+            <button class="mt-del" data-id="${s.id}" aria-label="Delete entry">&times;</button>
+          </div>
+        `).join('') : ''}
+        ${dayEntries.length === 0 && daySymptoms.length === 0 ? '<div class="mt-empty">Nothing logged yet.</div>' :
+          dayEntries.length === 0 ? '' :
           Object.keys(mealGroups).map(meal => `
             <div class="mt-log-meal" style="margin-top:10px">${meal}</div>
             ${mealGroups[meal].map(e => `
@@ -348,7 +390,7 @@
             const cbp = Math.min(pct(dt.carb, tg.carb), 100);
             return `
               <div class="mt-hist-item" data-date="${d}">
-                <div class="mt-hist-head"><span class="mt-hist-date">${label}</span><span class="mt-hist-cal" style="color:${dt.cal>tg.cal?'var(--over)':'var(--ink)'}">${dt.cal} kcal</span></div>
+                <div class="mt-hist-head"><span class="mt-hist-date">${label}${symptomDates.has(d) ? '<span class="mt-hist-symptom-dot" title="Symptom logged"></span>' : ''}</span><span class="mt-hist-cal" style="color:${dt.cal>tg.cal?'var(--over)':'var(--ink)'}">${dt.cal} kcal</span></div>
                 <div class="mt-hist-bars">
                   <div><span style="width:${cp}%; background:var(--ink)"></span></div>
                   <div><span style="width:${pp}%; background:var(--protein)"></span></div>
@@ -370,35 +412,62 @@
     if (nextBtn) nextBtn.onclick = () => { state.currentDate = shiftDate(state.currentDate, 1); render(); };
 
     document.getElementById('mt-add-btn').onclick = async () => {
-      const name = document.getElementById('mt-in-name').value.trim();
-      const meal = document.getElementById('mt-in-meal').value;
-      if (!name) return;
       const now = new Date();
-      const entry = {
-        id: 'e-' + Date.now() + '-' + Math.random().toString(36).slice(2,7),
-        date: state.currentDate, meal, name,
-        cal: null, protein: null, fat: null, carb: null, status: 'pending',
-        time: String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0'),
-      };
+      const timeStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+      let entry;
+      if (state.entryTab === 'meal') {
+        const name = document.getElementById('mt-in-name').value.trim();
+        const meal = document.getElementById('mt-in-meal').value;
+        if (!name) return;
+        entry = {
+          id: 'e-' + Date.now() + '-' + Math.random().toString(36).slice(2,7),
+          date: state.currentDate, meal, name,
+          cal: null, protein: null, fat: null, carb: null, status: 'pending',
+          time: timeStr,
+        };
+      } else {
+        const type = document.getElementById('mt-in-symptype').value;
+        const note = document.getElementById('mt-in-symptom').value.trim();
+        entry = {
+          id: 'e-' + Date.now() + '-' + Math.random().toString(36).slice(2,7),
+          date: state.currentDate, kind: 'symptom', type, severity: state.severity, note,
+          time: timeStr,
+        };
+      }
       state.entries.push(entry);
       const q = loadQueue(); q.push(entry); saveQueue(q); // survive a reload even if the write below fails
-      document.getElementById('mt-in-name').value = '';
+      if (state.entryTab === 'meal') { document.getElementById('mt-in-name').value = ''; }
+      else { document.getElementById('mt-in-symptom').value = ''; }
       await persist();
     };
+
+    root.querySelectorAll('.mt-tab').forEach(btn => {
+      btn.onclick = () => { state.entryTab = btn.dataset.tab; render(); };
+    });
+    root.querySelectorAll('.mt-sev-btn').forEach(btn => {
+      btn.onclick = () => { state.severity = btn.dataset.sev; render(); };
+    });
+
     const nameInput = document.getElementById('mt-in-name');
-    nameInput.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') document.getElementById('mt-add-btn').click(); });
-    nameInput.focus();
-    // default meal to whatever fits the time of day
-    const hr = new Date().getHours();
-    document.getElementById('mt-in-meal').value = hr < 11 ? 'Breakfast' : hr < 15 ? 'Lunch' : hr < 21 ? 'Dinner' : 'Snack';
+    const symptomInput = document.getElementById('mt-in-symptom');
+    const activeInput = nameInput || symptomInput;
+    if (activeInput) {
+      activeInput.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') document.getElementById('mt-add-btn').click(); });
+      activeInput.focus();
+    }
+    if (nameInput) {
+      // default meal to whatever fits the time of day
+      const hr = new Date().getHours();
+      document.getElementById('mt-in-meal').value = hr < 11 ? 'Breakfast' : hr < 15 ? 'Lunch' : hr < 21 ? 'Dinner' : 'Snack';
+    }
 
     const syncBtn = document.getElementById('mt-sync-btn');
     if (syncBtn) syncBtn.onclick = async () => { state.loaded = false; render(); await loadData(); };
 
     const fab = document.getElementById('mt-fab');
     if (fab) fab.onclick = () => {
-      nameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setTimeout(() => nameInput.focus(), 300);
+      activeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => activeInput.focus(), 300);
     };
 
     root.querySelectorAll('.mt-del').forEach(btn => {
