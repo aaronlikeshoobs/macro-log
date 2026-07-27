@@ -62,11 +62,11 @@
       "date": "2026-07-27",
       "meal": "Dinner",
       "name": "1 cup of mixed nuts",
-      "cal": null,
-      "protein": null,
-      "fat": null,
-      "carb": null,
-      "status": "estimating",
+      "cal": 880,
+      "protein": 24,
+      "fat": 78,
+      "carb": 32,
+      "status": "estimated",
       "time": "15:17"
     }
   ],
