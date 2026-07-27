@@ -258,7 +258,7 @@
 
       <div class="mt-label">
         <div class="mt-label-head">Today's Intake</div>
-        <div class="mt-label-sub"><span>${dayEntries.length} item${dayEntries.length===1?'':'s'} logged</span><span>Target basis: 1 day</span></div>
+        <div class="mt-label-sub"><span>${dayEntries.length} item${dayEntries.length===1?'':'s'} logged${dayEntries.filter(e=>e.status==='pending').length ? ` &middot; ${dayEntries.filter(e=>e.status==='pending').length} awaiting estimate` : ''}</span><span>Target basis: 1 day</span></div>
         <div class="mt-cal-row">
           <span class="mt-row-label">Calories</span>
           <span class="mt-row-val" style="color:${calOver?'var(--over)':'var(--ink)'}">${t.cal} <span style="font-size:14px;font-weight:400;color:var(--muted)">/ ${tg.cal}</span></span>
@@ -274,20 +274,14 @@
       <div class="mt-section-title">Log a Meal</div>
       <div class="mt-form">
         <div class="mt-form-row">
-          <div class="mt-form-name"><label>Food</label><input id="mt-in-name" type="text" placeholder="e.g. Grilled chicken bowl" /></div>
+          <div class="mt-form-name" style="flex:3 1 220px;"><label>What did you eat?</label><input id="mt-in-name" type="text" placeholder="e.g. Turkey chili, one bowl, no cheese" /></div>
           <div class="mt-form-meal"><label>Meal</label>
             <select id="mt-in-meal"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option></select>
           </div>
         </div>
-        <div class="mt-form-row">
-          <div class="mt-form-num"><label>Calories</label><input id="mt-in-cal" type="number" min="0" placeholder="0" /></div>
-          <div class="mt-form-num"><label>Protein (g)</label><input id="mt-in-protein" type="number" min="0" placeholder="0" /></div>
-          <div class="mt-form-num"><label>Fat (g)</label><input id="mt-in-fat" type="number" min="0" placeholder="0" /></div>
-          <div class="mt-form-num"><label>Carb (g)</label><input id="mt-in-carb" type="number" min="0" placeholder="0" /></div>
-        </div>
         <button class="mt-add-btn" id="mt-add-btn" ${state.syncing?'disabled':''}>${state.syncing ? 'Saving\u2026' : `+ Add to ${isToday ? "today's" : "this day's"} log`}</button>
       </div>
-      <div class="mt-sync ${state.syncErr ? 'err' : ''}">${state.syncErr ? 'Sync error: ' + escapeHtml(state.syncErr) : 'Synced to GitHub'}</div>
+      <div class="mt-sync ${state.syncErr ? 'err' : ''}">${state.syncErr ? 'Sync error: ' + escapeHtml(state.syncErr) : 'Synced to GitHub &middot; macros estimated by Claude'}</div>
 
       <div class="mt-section-title">Entries &mdash; ${dateLabel}</div>
       <div id="mt-log-list">
@@ -298,7 +292,7 @@
               <div class="mt-log-item">
                 <div>${escapeHtml(e.name)}</div>
                 <div style="display:flex; align-items:center;">
-                  <div class="mt-log-macros">${e.cal} kcal &middot; P${e.protein} F${e.fat} C${e.carb}</div>
+                  <div class="mt-log-macros">${e.status === 'pending' ? '<span style="color:var(--fat)">estimating&hellip;</span>' : `${e.cal} kcal &middot; P${e.protein} F${e.fat} C${e.carb}`}</div>
                   <button class="mt-del" data-id="${e.id}" aria-label="Delete entry">&times;</button>
                 </div>
               </div>
@@ -340,7 +334,7 @@
         }
       </div>
 
-      <div class="mt-note">Values are self-reported estimates. Data lives in your public GitHub repo (github.com/${cfg.user}/${cfg.repo}) — Claude reads it via the raw file URL when you ask for a check-in.</div>
+      <div class="mt-note">Just type what you ate — no numbers needed. Entries show "estimating&hellip;" until Claude fills in the macros, which happens the next time you're in chat and mention the log (Claude reads and writes this repo directly). Dairy-free is assumed by default; call it out in the text if something isn't.</div>
     `;
 
     document.getElementById('mt-prev').onclick = () => { state.currentDate = shiftDate(state.currentDate, -1); render(); };
@@ -349,18 +343,16 @@
 
     document.getElementById('mt-add-btn').onclick = async () => {
       const name = document.getElementById('mt-in-name').value.trim();
-      const cal = Number(document.getElementById('mt-in-cal').value) || 0;
-      const protein = Number(document.getElementById('mt-in-protein').value) || 0;
-      const fat = Number(document.getElementById('mt-in-fat').value) || 0;
-      const carb = Number(document.getElementById('mt-in-carb').value) || 0;
       const meal = document.getElementById('mt-in-meal').value;
-      if (!name || cal <= 0) return;
+      if (!name) return;
       const now = new Date();
       state.entries.push({
         id: 'e-' + Date.now() + '-' + Math.random().toString(36).slice(2,7),
-        date: state.currentDate, meal, name, cal, protein, fat, carb,
+        date: state.currentDate, meal, name,
+        cal: null, protein: null, fat: null, carb: null, status: 'pending',
         time: String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0'),
       });
+      document.getElementById('mt-in-name').value = '';
       await persist();
     };
 
