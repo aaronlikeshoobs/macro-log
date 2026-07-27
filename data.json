@@ -62,11 +62,11 @@
       "date": "2026-07-27",
       "meal": "Snack",
       "name": "Mixed nuts",
-      "cal": null,
-      "protein": null,
-      "fat": null,
-      "carb": null,
-      "status": "estimating",
+      "cal": 200,
+      "protein": 6,
+      "fat": 18,
+      "carb": 7,
+      "status": "estimated",
       "time": "15:17"
     }
   ],
