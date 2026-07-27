@@ -50,11 +50,11 @@
       "date": "2026-07-27",
       "meal": "Snack",
       "name": "Celsius",
-      "cal": null,
-      "protein": null,
-      "fat": null,
-      "carb": null,
-      "status": "estimating",
+      "cal": 10,
+      "protein": 0,
+      "fat": 0,
+      "carb": 2,
+      "status": "estimated",
       "time": "15:16"
     }
   ],
