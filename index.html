@@ -170,6 +170,25 @@
     sha = json.content.sha;
   }
 
+  const WORKER_URL = 'https://macro-log-proxy.restless-union-743f.workers.dev/';
+
+  async function estimateMacros(description) {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ description }),
+    });
+    if (!res.ok) throw new Error('Estimate failed: ' + res.status);
+    const parsed = await res.json();
+    if (parsed.error) throw new Error(parsed.error);
+    return {
+      cal: Math.round(Number(parsed.cal)) || 0,
+      protein: Math.round(Number(parsed.protein)) || 0,
+      fat: Math.round(Number(parsed.fat)) || 0,
+      carb: Math.round(Number(parsed.carb)) || 0,
+    };
+  }
+
   async function loadData() {
     try {
       const data = await ghGet();
@@ -301,7 +320,7 @@
 
       <div class="mt-label">
         <div class="mt-label-head">Today's Intake</div>
-        <div class="mt-label-sub"><span>${dayEntries.length} item${dayEntries.length===1?'':'s'} logged${dayEntries.filter(e=>e.status==='pending').length ? ` &middot; ${dayEntries.filter(e=>e.status==='pending').length} awaiting estimate` : ''}</span><span>Target basis: 1 day</span></div>
+        <div class="mt-label-sub"><span>${dayEntries.length} item${dayEntries.length===1?'':'s'} logged${dayEntries.filter(e=>e.status==='pending'||e.status==='estimating').length ? ` &middot; ${dayEntries.filter(e=>e.status==='pending'||e.status==='estimating').length} awaiting estimate` : ''}</span><span>Target basis: 1 day</span></div>
         <div class="mt-cal-row">
           <span class="mt-row-label">Calories</span>
           <span class="mt-row-val" style="color:${calOver?'var(--over)':'var(--ink)'}">${t.cal} <span style="font-size:14px;font-weight:400;color:var(--muted)">/ ${tg.cal}</span></span>
@@ -361,7 +380,7 @@
               <div class="mt-log-item">
                 <div>${escapeHtml(e.name)}</div>
                 <div style="display:flex; align-items:center;">
-                  <div class="mt-log-macros">${e.status === 'pending' ? '<span style="color:var(--fat)">estimating&hellip;</span>' : `${e.cal} kcal &middot; P${e.protein} F${e.fat} C${e.carb}`}</div>
+                  <div class="mt-log-macros">${e.status === 'estimating' ? '<span style="color:var(--fat)">calculating&hellip;</span>' : e.status === 'pending' ? '<span style="color:var(--over)">couldn\'t estimate</span>' : `${e.cal} kcal &middot; P${e.protein} F${e.fat} C${e.carb}`}</div>
                   <button class="mt-del" data-id="${e.id}" aria-label="Delete entry">&times;</button>
                 </div>
               </div>
@@ -403,7 +422,7 @@
         }
       </div>
 
-      <div class="mt-note">Just type what you ate — no numbers needed. Entries show "estimating&hellip;" until Claude fills in the macros, which happens the next time you're in chat and mention the log (Claude reads and writes this repo directly). Dairy-free is assumed by default; call it out in the text if something isn't.</div>
+      <div class="mt-note">Just type what you ate — macros are estimated automatically by Claude right after you log it. If a call fails, the entry shows "couldn't estimate" and will be filled in the next time you're in chat. Dairy-free is assumed by default; call it out in the text if something isn't.</div>
       <button class="mt-fab" id="mt-fab" aria-label="Quick log a meal">+</button>
     `;
 
@@ -422,7 +441,7 @@
         entry = {
           id: 'e-' + Date.now() + '-' + Math.random().toString(36).slice(2,7),
           date: state.currentDate, meal, name,
-          cal: null, protein: null, fat: null, carb: null, status: 'pending',
+          cal: null, protein: null, fat: null, carb: null, status: 'estimating',
           time: timeStr,
         };
       } else {
@@ -439,6 +458,19 @@
       if (state.entryTab === 'meal') { document.getElementById('mt-in-name').value = ''; }
       else { document.getElementById('mt-in-symptom').value = ''; }
       await persist();
+
+      if (entry.status === 'estimating') {
+        try {
+          const macros = await estimateMacros(entry.name);
+          Object.assign(entry, macros, { status: 'estimated' });
+        } catch (e) {
+          entry.status = 'pending'; // Claude will fill it in next time you're in chat
+        }
+        const q2 = loadQueue().filter(qe => qe.id !== entry.id);
+        if (entry.status === 'pending') { q2.push(entry); }
+        saveQueue(q2);
+        await persist();
+      }
     };
 
     root.querySelectorAll('.mt-tab').forEach(btn => {
