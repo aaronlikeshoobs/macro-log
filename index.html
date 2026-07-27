@@ -2,8 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Macro Log</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" type="image/png" href="favicon.png" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Macro Log" />
+<meta name="theme-color" content="#1A1A1A" />
 <style>
   :root {
     --bg: #FAF8F3;
@@ -22,7 +29,7 @@
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; background: var(--bg); }
   body { font-family: var(--font-body); color: var(--ink); }
-  #mt-root { padding: 24px 16px 60px; max-width: 640px; margin: 0 auto; min-height: 100vh; }
+  #mt-root { padding: 24px 16px 60px; padding-top: max(24px, env(safe-area-inset-top)); max-width: 640px; margin: 0 auto; min-height: 100vh; }
 
   .mt-eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 0 0 4px; }
   .mt-title { font-family: var(--font-display); font-weight: 800; font-stretch: condensed; font-size: 30px; letter-spacing: -0.01em; margin: 0 0 18px; }
@@ -108,7 +115,11 @@
 
   let cfg = null; // { user, repo, token }
   let sha = null; // current data.json sha, for updates
+  const LS_QUEUE = 'mt-offline-queue';
   let state = { entries: SEED_ENTRIES, targets: DEFAULT_TARGETS, currentDate: todayStr(), loaded: false, syncErr: null, syncing: false };
+
+  function loadQueue() { try { return JSON.parse(localStorage.getItem(LS_QUEUE) || '[]'); } catch(e) { return []; } }
+  function saveQueue(q) { localStorage.setItem(LS_QUEUE, JSON.stringify(q)); }
 
   function todayStr() {
     const d = new Date();
@@ -153,8 +164,15 @@
     } catch (e) {
       state.syncErr = e.message;
     }
+    // merge any entries saved locally while offline/errored, that never made it to GitHub
+    const queue = loadQueue();
+    if (queue.length) {
+      const existingIds = new Set(state.entries.map(e => e.id));
+      queue.forEach(qe => { if (!existingIds.has(qe.id)) state.entries.push(qe); });
+    }
     state.loaded = true;
     render();
+    if (queue.length && !state.syncErr) { await persist(); } // flush queue now that we're connected
   }
 
   async function persist() {
@@ -162,8 +180,9 @@
     try {
       await ghPut({ entries: state.entries, targets: state.targets });
       state.syncErr = null;
+      saveQueue([]); // fully synced, clear any queued backup
     } catch (e) {
-      state.syncErr = e.message;
+      state.syncErr = e.message + ' \u2014 saved locally, will retry on next open';
     }
     state.syncing = false; render();
   }
@@ -242,12 +261,18 @@
     const calOver = t.cal > tg.cal;
 
     const allDates = Array.from(new Set(state.entries.map(e => e.date))).sort();
+    const dateSet = new Set(allDates);
+    let streak = 0;
+    { let d = todayStr(); if (!dateSet.has(d)) d = shiftDate(d, -1);
+      while (dateSet.has(d)) { streak++; d = shiftDate(d, -1); } }
     const last7 = allDates.slice(-7);
     const avg = (key) => last7.length ? Math.round(last7.reduce((s,d)=>s+totalsFor(d)[key],0)/last7.length) : 0;
     const histDates = allDates.filter(d => d !== state.currentDate).sort().reverse().slice(0, 14);
 
     root.innerHTML = `
-      <p class="mt-eyebrow">Daily Intake Ledger &middot; dairy-free &middot; synced to github.com/${cfg.user}/${cfg.repo}</p>
+      <p class="mt-eyebrow">Daily Intake Ledger &middot; dairy-free &middot; synced to github.com/${cfg.user}/${cfg.repo}
+        <button id="mt-sync-btn" style="float:right; background:none; border:1px solid var(--muted); color:var(--muted); font-family:var(--font-mono); font-size:9px; padding:2px 7px; cursor:pointer; text-transform:uppercase; letter-spacing:0.05em;">&#8635; Refresh</button>
+      </p>
       <h1 class="mt-title">Macro Log</h1>
 
       <div class="mt-datebar">
@@ -301,7 +326,7 @@
         }
       </div>
 
-      <div class="mt-section-title">Last ${last7.length || 0}-Day Average</div>
+      <div class="mt-section-title" style="display:flex; justify-content:space-between; align-items:baseline;"><span>Last ${last7.length || 0}-Day Average</span><span style="font-family:var(--font-mono); font-size:11px; text-transform:none; letter-spacing:0; color:var(--protein)">${streak} day${streak===1?'':'s'} logging streak</span></div>
       <div class="mt-week-summary">
         <div class="mt-week-cell"><span class="mt-week-num">${avg('cal')}</span><span class="mt-week-lbl">kcal</span></div>
         <div class="mt-week-cell"><span class="mt-week-num" style="color:var(--protein)">${avg('protein')}g</span><span class="mt-week-lbl">protein</span></div>
@@ -346,15 +371,26 @@
       const meal = document.getElementById('mt-in-meal').value;
       if (!name) return;
       const now = new Date();
-      state.entries.push({
+      const entry = {
         id: 'e-' + Date.now() + '-' + Math.random().toString(36).slice(2,7),
         date: state.currentDate, meal, name,
         cal: null, protein: null, fat: null, carb: null, status: 'pending',
         time: String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0'),
-      });
+      };
+      state.entries.push(entry);
+      const q = loadQueue(); q.push(entry); saveQueue(q); // survive a reload even if the write below fails
       document.getElementById('mt-in-name').value = '';
       await persist();
     };
+    const nameInput = document.getElementById('mt-in-name');
+    nameInput.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') document.getElementById('mt-add-btn').click(); });
+    nameInput.focus();
+    // default meal to whatever fits the time of day
+    const hr = new Date().getHours();
+    document.getElementById('mt-in-meal').value = hr < 11 ? 'Breakfast' : hr < 15 ? 'Lunch' : hr < 21 ? 'Dinner' : 'Snack';
+
+    const syncBtn = document.getElementById('mt-sync-btn');
+    if (syncBtn) syncBtn.onclick = async () => { state.loaded = false; render(); await loadData(); };
 
     root.querySelectorAll('.mt-del').forEach(btn => {
       btn.onclick = async () => {
