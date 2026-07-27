@@ -159,13 +159,24 @@
     return decoded ? JSON.parse(decoded) : {};
   }
 
-  async function ghPut(dataObj) {
+  async function ghPut(dataObj, retried) {
     const content = btoa(unescape(encodeURIComponent(JSON.stringify(dataObj, null, 2))));
     const res = await fetch(`https://api.github.com/repos/${cfg.user}/${cfg.repo}/contents/data.json`, {
       method: 'PUT',
       headers: { Authorization: `Bearer ${cfg.token}`, Accept: 'application/vnd.github+json' },
       body: JSON.stringify({ message: 'log update ' + new Date().toISOString(), content, sha })
     });
+    if (res.status === 409 && !retried) {
+      // our sha is stale (file changed elsewhere) — refetch latest, merge our entries in, retry once
+      const latest = await ghGet(); // also refreshes module-level `sha`
+      const remoteEntries = latest.entries || [];
+      const remoteIds = new Set(remoteEntries.map(e => e.id));
+      const oursOnly = (dataObj.entries || []).filter(e => !remoteIds.has(e.id));
+      const merged = { entries: [...remoteEntries, ...oursOnly], targets: dataObj.targets || latest.targets };
+      state.entries = merged.entries;
+      state.targets = merged.targets;
+      return ghPut(merged, true);
+    }
     if (!res.ok) throw new Error('GitHub write failed: ' + res.status);
     const json = await res.json();
     sha = json.content.sha;
