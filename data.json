@@ -1,8 +1,55 @@
 {
   "entries": [
-    { "id": "seed-1", "date": "2026-07-27", "meal": "Breakfast", "name": "Chicken breast (4.2 oz)", "cal": 200, "protein": 37, "fat": 4, "carb": 0, "time": "08:00" },
-    { "id": "seed-2", "date": "2026-07-27", "meal": "Breakfast", "name": "3 jumbo eggs, scrambled", "cal": 270, "protein": 23, "fat": 19, "carb": 2, "time": "08:00" },
-    { "id": "seed-3", "date": "2026-07-27", "meal": "Breakfast", "name": "Dave's 21-grain toast, dry", "cal": 110, "protein": 5, "fat": 2, "carb": 22, "time": "08:00" }
+    {
+      "id": "seed-1",
+      "date": "2026-07-27",
+      "meal": "Breakfast",
+      "name": "Chicken breast (4.2 oz)",
+      "cal": 200,
+      "protein": 37,
+      "fat": 4,
+      "carb": 0,
+      "time": "08:00"
+    },
+    {
+      "id": "seed-2",
+      "date": "2026-07-27",
+      "meal": "Breakfast",
+      "name": "3 jumbo eggs, scrambled",
+      "cal": 270,
+      "protein": 23,
+      "fat": 19,
+      "carb": 2,
+      "time": "08:00"
+    },
+    {
+      "id": "seed-3",
+      "date": "2026-07-27",
+      "meal": "Breakfast",
+      "name": "Dave's 21-grain toast, dry",
+      "cal": 110,
+      "protein": 5,
+      "fat": 2,
+      "carb": 22,
+      "time": "08:00"
+    },
+    {
+      "id": "e-1785186330459-lvk18",
+      "date": "2026-07-27",
+      "meal": "Lunch",
+      "name": "Can of safe catch tuna in water, tablespoon of avocado oil mayo on 2 x Dave’s bread",
+      "cal": null,
+      "protein": null,
+      "fat": null,
+      "carb": null,
+      "status": "pending",
+      "time": "14:05"
+    }
   ],
-  "targets": { "cal": 1750, "protein": 170, "fat": 55, "carb": 145 }
+  "targets": {
+    "cal": 1750,
+    "protein": 170,
+    "fat": 55,
+    "carb": 145
+  }
 }
