@@ -173,7 +173,7 @@
 
   const WORKER_URL = 'https://macro-log-proxy.restless-union-743f.workers.dev/';
 
-  async function estimateMacros(description) {
+  async function estimateItems(description) {
     const res = await fetch(WORKER_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -182,12 +182,14 @@
     if (!res.ok) throw new Error('Estimate failed: ' + res.status);
     const parsed = await res.json();
     if (parsed.error) throw new Error(parsed.error);
-    return {
-      cal: Math.round(Number(parsed.cal)) || 0,
-      protein: Math.round(Number(parsed.protein)) || 0,
-      fat: Math.round(Number(parsed.fat)) || 0,
-      carb: Math.round(Number(parsed.carb)) || 0,
-    };
+    const items = Array.isArray(parsed.items) ? parsed.items : [parsed];
+    return items.map(it => ({
+      name: it.name || description,
+      cal: Math.round(Number(it.cal)) || 0,
+      protein: Math.round(Number(it.protein)) || 0,
+      fat: Math.round(Number(it.fat)) || 0,
+      carb: Math.round(Number(it.carb)) || 0,
+    }));
   }
 
   async function loadData() {
@@ -463,14 +465,24 @@
 
       if (entry.status === 'estimating') {
         try {
-          const macros = await estimateMacros(entry.name);
-          Object.assign(entry, macros, { status: 'estimated' });
+          const items = await estimateItems(entry.name);
+          // replace the single placeholder with one entry per food item
+          state.entries = state.entries.filter(e => e.id !== entry.id);
+          const newEntries = items.map((it, i) => ({
+            id: 'e-' + Date.now() + '-' + i + '-' + Math.random().toString(36).slice(2,5),
+            date: entry.date, meal: entry.meal, name: it.name,
+            cal: it.cal, protein: it.protein, fat: it.fat, carb: it.carb,
+            status: 'estimated', time: entry.time,
+          }));
+          state.entries.push(...newEntries);
+          const q2 = loadQueue().filter(qe => qe.id !== entry.id);
+          saveQueue(q2);
         } catch (e) {
           entry.status = 'pending'; // Claude will fill it in next time you're in chat
+          const q2 = loadQueue().filter(qe => qe.id !== entry.id);
+          q2.push(entry);
+          saveQueue(q2);
         }
-        const q2 = loadQueue().filter(qe => qe.id !== entry.id);
-        if (entry.status === 'pending') { q2.push(entry); }
-        saveQueue(q2);
         await persist();
       }
     };
