@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Macro Log</title>
+<style>
+  :root {
+    --bg: #FAF8F3;
+    --panel: #FFFFFF;
+    --ink: #1A1A1A;
+    --muted: #6B6B63;
+    --line: #E4E0D4;
+    --protein: #2D5F3F;
+    --fat: #B8860B;
+    --carb: #2C4A6B;
+    --over: #A83232;
+    --font-display: 'Arial Narrow', 'Helvetica Neue Condensed', Helvetica, Arial, sans-serif;
+    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    --font-mono: 'SF Mono', 'Roboto Mono', ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); }
+  body { font-family: var(--font-body); color: var(--ink); }
+  #mt-root { padding: 24px 16px 60px; max-width: 640px; margin: 0 auto; min-height: 100vh; }
+
+  .mt-eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 0 0 4px; }
+  .mt-title { font-family: var(--font-display); font-weight: 800; font-stretch: condensed; font-size: 30px; letter-spacing: -0.01em; margin: 0 0 18px; }
+
+  .mt-datebar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .mt-datebar button { background: var(--ink); color: var(--bg); border: none; width: 34px; height: 34px; font-size: 16px; cursor: pointer; font-family: var(--font-mono); }
+  .mt-datebar button:disabled { opacity: 0.3; cursor: default; }
+  .mt-date-label { font-family: var(--font-mono); font-size: 15px; font-weight: 600; text-align: center; flex: 1; }
+  .mt-date-sub { color: var(--muted); font-size: 11px; display: block; margin-top: 2px; font-weight: 400; }
+
+  .mt-label { background: var(--panel); border: 3px solid var(--ink); padding: 14px 16px 8px; margin-bottom: 24px; }
+  .mt-label-head { font-family: var(--font-display); font-weight: 800; font-stretch: condensed; font-size: 26px; letter-spacing: -0.01em; border-bottom: 9px solid var(--ink); padding-bottom: 6px; margin-bottom: 6px; }
+  .mt-label-sub { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 12px; border-bottom: 5px solid var(--ink); padding-bottom: 6px; margin-bottom: 6px; }
+  .mt-cal-row { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 9px solid var(--ink); padding: 6px 0; margin-bottom: 2px; }
+  .mt-cal-row .mt-row-label { font-family: var(--font-display); font-weight: 800; font-size: 20px; font-stretch: condensed; }
+  .mt-cal-row .mt-row-val { font-family: var(--font-mono); font-size: 26px; font-weight: 700; }
+  .mt-row { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .mt-row:last-child { border-bottom: none; }
+  .mt-row-name { font-weight: 700; }
+  .mt-row-amt { font-family: var(--font-mono); color: var(--muted); text-align: right; min-width: 90px; }
+  .mt-row-pct { font-family: var(--font-mono); font-weight: 700; text-align: right; min-width: 44px; }
+  .mt-bar-track { grid-column: 1 / -1; height: 5px; background: var(--line); position: relative; overflow: hidden; }
+  .mt-bar-fill { height: 100%; }
+  .mt-swatch { width: 9px; height: 9px; display: inline-block; margin-right: 6px; border-radius: 1px; }
+
+  .mt-section-title { font-family: var(--font-display); font-weight: 800; font-stretch: condensed; font-size: 18px; text-transform: uppercase; letter-spacing: 0.02em; border-bottom: 3px solid var(--ink); padding-bottom: 6px; margin: 28px 0 12px; }
+  .mt-form { background: var(--panel); border: 1px solid var(--line); padding: 14px; margin-bottom: 20px; }
+  .mt-form-row { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .mt-form input, .mt-form select { font-family: var(--font-body); border: 1px solid #C9C4B4; background: #fff; padding: 8px; font-size: 13px; width: 100%; color: var(--ink); }
+  .mt-form input:focus, .mt-form select:focus { outline: 2px solid var(--ink); outline-offset: -1px; }
+  .mt-form-name { flex: 2 1 160px; }
+  .mt-form-num { flex: 1 1 70px; min-width: 0; }
+  .mt-form-meal { flex: 1 1 100px; }
+  .mt-form label { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 3px; letter-spacing: 0.05em; }
+  .mt-add-btn { background: var(--ink); color: var(--bg); border: none; padding: 10px 16px; font-family: var(--font-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; width: 100%; }
+  .mt-add-btn:hover { opacity: 0.85; }
+  .mt-add-btn:disabled { opacity: 0.5; cursor: default; }
+
+  .mt-log-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .mt-log-meal { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em; }
+  .mt-log-macros { font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-align: right; }
+  .mt-del { background: none; border: none; color: var(--over); cursor: pointer; font-size: 16px; padding: 0 0 0 10px; line-height: 1; }
+  .mt-empty { color: var(--muted); font-size: 13px; padding: 16px 0; text-align: center; font-style: italic; }
+
+  .mt-hist-item { background: var(--panel); border: 1px solid var(--line); padding: 10px 12px; margin-bottom: 8px; cursor: pointer; }
+  .mt-hist-head { display: flex; justify-content: space-between; align-items: center; }
+  .mt-hist-date { font-family: var(--font-mono); font-weight: 700; font-size: 13px; }
+  .mt-hist-cal { font-family: var(--font-mono); font-size: 13px; }
+  .mt-hist-bars { display: flex; gap: 3px; margin-top: 8px; height: 6px; }
+  .mt-hist-bars > div { flex: 1; background: var(--line); position: relative; overflow: hidden; }
+  .mt-hist-bars > div > span { display: block; height: 100%; }
+  .mt-hist-detail { margin-top: 8px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); display: flex; gap: 14px; }
+
+  .mt-week-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-bottom: 20px; }
+  .mt-week-cell { background: var(--panel); padding: 10px 8px; text-align: center; }
+  .mt-week-cell .mt-week-num { font-family: var(--font-mono); font-weight: 700; font-size: 17px; display: block; }
+  .mt-week-cell .mt-week-lbl { font-family: var(--font-mono); font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+
+  .mt-note { font-family: var(--font-mono); font-size: 11px; color: var(--muted); background: var(--panel); border-left: 3px solid var(--ink); padding: 8px 10px; margin-bottom: 20px; }
+  .mt-loading { text-align: center; padding: 60px 0; font-family: var(--font-mono); color: var(--muted); }
+  .mt-sync { font-family: var(--font-mono); font-size: 10px; color: var(--muted); text-align: right; margin-top: -12px; margin-bottom: 16px; }
+  .mt-sync.err { color: var(--over); }
+
+  /* Setup modal */
+  .mt-modal-wrap { position: fixed; inset: 0; background: rgba(26,26,26,0.55); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 10; }
+  .mt-modal { background: var(--panel); border: 3px solid var(--ink); max-width: 380px; width: 100%; padding: 20px; }
+  .mt-modal h2 { font-family: var(--font-display); font-stretch: condensed; font-size: 20px; margin: 0 0 12px; }
+  .mt-modal p { font-size: 12px; color: var(--muted); margin: 0 0 14px; line-height: 1.5; }
+  .mt-modal label { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; color: var(--muted); display: block; margin: 10px 0 3px; letter-spacing: 0.05em; }
+  .mt-modal input { width: 100%; font-family: var(--font-body); border: 1px solid #C9C4B4; padding: 9px; font-size: 13px; }
+  .mt-modal-err { color: var(--over); font-family: var(--font-mono); font-size: 11px; margin-top: 10px; }
+</style>
+</head>
+<body>
+<div id="mt-root"><div class="mt-loading">loading log&hellip;</div></div>
+
+<script>
+(function() {
+  const root = document.getElementById('mt-root');
+  const DEFAULT_TARGETS = { cal: 1750, protein: 170, fat: 55, carb: 145 };
+  const SEED_ENTRIES = [];
+  const LS_CFG = 'mt-github-cfg';
+
+  let cfg = null; // { user, repo, token }
+  let sha = null; // current data.json sha, for updates
+  let state = { entries: SEED_ENTRIES, targets: DEFAULT_TARGETS, currentDate: todayStr(), loaded: false, syncErr: null, syncing: false };
+
+  function todayStr() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  function loadCfg() {
+    try { const raw = localStorage.getItem(LS_CFG); return raw ? JSON.parse(raw) : null; }
+    catch (e) { return null; }
+  }
+  function saveCfg(c) { localStorage.setItem(LS_CFG, JSON.stringify(c)); }
+
+  async function ghGet() {
+    const res = await fetch(`https://api.github.com/repos/${cfg.user}/${cfg.repo}/contents/data.json`, {
+      headers: { Authorization: `Bearer ${cfg.token}`, Accept: 'application/vnd.github+json' }
+    });
+    if (!res.ok) throw new Error('GitHub read failed: ' + res.status);
+    const json = await res.json();
+    sha = json.sha;
+    const decoded = decodeURIComponent(escape(atob(json.content.replace(/\n/g, ''))));
+    return decoded ? JSON.parse(decoded) : {};
+  }
+
+  async function ghPut(dataObj) {
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(dataObj, null, 2))));
+    const res = await fetch(`https://api.github.com/repos/${cfg.user}/${cfg.repo}/contents/data.json`, {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${cfg.token}`, Accept: 'application/vnd.github+json' },
+      body: JSON.stringify({ message: 'log update ' + new Date().toISOString(), content, sha })
+    });
+    if (!res.ok) throw new Error('GitHub write failed: ' + res.status);
+    const json = await res.json();
+    sha = json.content.sha;
+  }
+
+  async function loadData() {
+    try {
+      const data = await ghGet();
+      state.entries = data.entries || SEED_ENTRIES;
+      state.targets = data.targets || DEFAULT_TARGETS;
+      state.syncErr = null;
+    } catch (e) {
+      state.syncErr = e.message;
+    }
+    state.loaded = true;
+    render();
+  }
+
+  async function persist() {
+    state.syncing = true; render();
+    try {
+      await ghPut({ entries: state.entries, targets: state.targets });
+      state.syncErr = null;
+    } catch (e) {
+      state.syncErr = e.message;
+    }
+    state.syncing = false; render();
+  }
+
+  function fmtDateLabel(dstr) {
+    const [y,m,d] = dstr.split('-').map(Number);
+    const dt = new Date(y, m-1, d);
+    const isToday = dstr === todayStr();
+    return { label: dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }), isToday };
+  }
+  function shiftDate(dstr, delta) {
+    const [y,m,d] = dstr.split('-').map(Number);
+    const dt = new Date(y, m-1, d); dt.setDate(dt.getDate() + delta);
+    return dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0') + '-' + String(dt.getDate()).padStart(2,'0');
+  }
+  function totalsFor(dstr) {
+    return state.entries.filter(e => e.date === dstr).reduce((acc, e) => {
+      acc.cal += Number(e.cal)||0; acc.protein += Number(e.protein)||0;
+      acc.fat += Number(e.fat)||0; acc.carb += Number(e.carb)||0;
+      return acc;
+    }, { cal: 0, protein: 0, fat: 0, carb: 0 });
+  }
+  function pct(val, target) { return target ? Math.round((val/target)*100) : 0; }
+  function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+
+  function macroRow(label, colorVar, val, target, unit) {
+    const p = pct(val, target);
+    const fillColor = p > 100 ? 'var(--over)' : `var(${colorVar})`;
+    return `
+      <div class="mt-row">
+        <div class="mt-row-name"><span class="mt-swatch" style="background:var(${colorVar})"></span>${label}</div>
+        <div class="mt-row-amt">${val}${unit} / ${target}${unit}</div>
+        <div class="mt-row-pct" style="color:${p>100?'var(--over)':'var(--ink)'}">${p}%</div>
+        <div class="mt-bar-track"><div class="mt-bar-fill" style="width:${Math.min(p,100)}%; background:${fillColor}"></div></div>
+      </div>`;
+  }
+
+  function renderSetupModal(prefill, errMsg) {
+    root.innerHTML = `
+      <div class="mt-modal-wrap"><div class="mt-modal">
+        <h2>Connect GitHub</h2>
+        <p>Enter your repo details once — stored only in this browser's local storage, never sent anywhere but GitHub's API.</p>
+        <label>GitHub username</label><input id="cfg-user" value="${prefill.user||'aaronlikeshoobs'}" />
+        <label>Repo name</label><input id="cfg-repo" value="${prefill.repo||'macro-log'}" />
+        <label>Personal access token</label><input id="cfg-token" type="password" value="${prefill.token||''}" placeholder="github_pat_..." />
+        ${errMsg ? `<div class="mt-modal-err">${escapeHtml(errMsg)}</div>` : ''}
+        <button class="mt-add-btn" style="margin-top:14px" id="cfg-save">Connect &amp; load log</button>
+      </div></div>`;
+    document.getElementById('cfg-save').onclick = async () => {
+      const user = document.getElementById('cfg-user').value.trim();
+      const repo = document.getElementById('cfg-repo').value.trim();
+      const token = document.getElementById('cfg-token').value.trim();
+      if (!user || !repo || !token) return;
+      cfg = { user, repo, token };
+      root.innerHTML = '<div class="mt-loading">connecting&hellip;</div>';
+      try {
+        await ghGet();
+        saveCfg(cfg);
+        loadData();
+      } catch (e) {
+        renderSetupModal(cfg, 'Could not connect: ' + e.message);
+      }
+    };
+  }
+
+  function render() {
+    if (!cfg) { renderSetupModal({}); return; }
+    if (!state.loaded) { root.innerHTML = '<div class="mt-loading">loading log&hellip;</div>'; return; }
+
+    const t = totalsFor(state.currentDate);
+    const tg = state.targets;
+    const { label: dateLabel, isToday } = fmtDateLabel(state.currentDate);
+    const dayEntries = state.entries.filter(e => e.date === state.currentDate).sort((a,b) => (a.time||'').localeCompare(b.time||''));
+    const mealGroups = {};
+    dayEntries.forEach(e => { (mealGroups[e.meal] = mealGroups[e.meal] || []).push(e); });
+    const calOver = t.cal > tg.cal;
+
+    const allDates = Array.from(new Set(state.entries.map(e => e.date))).sort();
+    const last7 = allDates.slice(-7);
+    const avg = (key) => last7.length ? Math.round(last7.reduce((s,d)=>s+totalsFor(d)[key],0)/last7.length) : 0;
+    const histDates = allDates.filter(d => d !== state.currentDate).sort().reverse().slice(0, 14);
+
+    root.innerHTML = `
+      <p class="mt-eyebrow">Daily Intake Ledger &middot; dairy-free &middot; synced to github.com/${cfg.user}/${cfg.repo}</p>
+      <h1 class="mt-title">Macro Log</h1>
+
+      <div class="mt-datebar">
+        <button id="mt-prev" aria-label="Previous day">&larr;</button>
+        <div class="mt-date-label">${dateLabel}<span class="mt-date-sub">${isToday ? 'TODAY' : state.currentDate}</span></div>
+        <button id="mt-next" ${isToday ? 'disabled' : ''} aria-label="Next day">&rarr;</button>
+      </div>
+
+      <div class="mt-label">
+        <div class="mt-label-head">Today's Intake</div>
+        <div class="mt-label-sub"><span>${dayEntries.length} item${dayEntries.length===1?'':'s'} logged</span><span>Target basis: 1 day</span></div>
+        <div class="mt-cal-row">
+          <span class="mt-row-label">Calories</span>
+          <span class="mt-row-val" style="color:${calOver?'var(--over)':'var(--ink)'}">${t.cal} <span style="font-size:14px;font-weight:400;color:var(--muted)">/ ${tg.cal}</span></span>
+        </div>
+        ${macroRow('Protein', '--protein', t.protein, tg.protein, 'g')}
+        ${macroRow('Fat', '--fat', t.fat, tg.fat, 'g')}
+        ${macroRow('Carbs', '--carb', t.carb, tg.carb, 'g')}
+        <div style="padding-top:10px; font-family:var(--font-mono); font-size:11px; color:${calOver ? 'var(--over)' : 'var(--muted)'}">
+          ${calOver ? `${t.cal - tg.cal} kcal over target` : `${tg.cal - t.cal} kcal remaining`}
+        </div>
+      </div>
+
+      <div class="mt-section-title">Log a Meal</div>
+      <div class="mt-form">
+        <div class="mt-form-row">
+          <div class="mt-form-name"><label>Food</label><input id="mt-in-name" type="text" placeholder="e.g. Grilled chicken bowl" /></div>
+          <div class="mt-form-meal"><label>Meal</label>
+            <select id="mt-in-meal"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option></select>
+          </div>
+        </div>
+        <div class="mt-form-row">
+          <div class="mt-form-num"><label>Calories</label><input id="mt-in-cal" type="number" min="0" placeholder="0" /></div>
+          <div class="mt-form-num"><label>Protein (g)</label><input id="mt-in-protein" type="number" min="0" placeholder="0" /></div>
+          <div class="mt-form-num"><label>Fat (g)</label><input id="mt-in-fat" type="number" min="0" placeholder="0" /></div>
+          <div class="mt-form-num"><label>Carb (g)</label><input id="mt-in-carb" type="number" min="0" placeholder="0" /></div>
+        </div>
+        <button class="mt-add-btn" id="mt-add-btn" ${state.syncing?'disabled':''}>${state.syncing ? 'Saving\u2026' : `+ Add to ${isToday ? "today's" : "this day's"} log`}</button>
+      </div>
+      <div class="mt-sync ${state.syncErr ? 'err' : ''}">${state.syncErr ? 'Sync error: ' + escapeHtml(state.syncErr) : 'Synced to GitHub'}</div>
+
+      <div class="mt-section-title">Entries &mdash; ${dateLabel}</div>
+      <div id="mt-log-list">
+        ${dayEntries.length === 0 ? '<div class="mt-empty">Nothing logged yet.</div>' :
+          Object.keys(mealGroups).map(meal => `
+            <div class="mt-log-meal" style="margin-top:10px">${meal}</div>
+            ${mealGroups[meal].map(e => `
+              <div class="mt-log-item">
+                <div>${escapeHtml(e.name)}</div>
+                <div style="display:flex; align-items:center;">
+                  <div class="mt-log-macros">${e.cal} kcal &middot; P${e.protein} F${e.fat} C${e.carb}</div>
+                  <button class="mt-del" data-id="${e.id}" aria-label="Delete entry">&times;</button>
+                </div>
+              </div>
+            `).join('')}
+          `).join('')
+        }
+      </div>
+
+      <div class="mt-section-title">Last ${last7.length || 0}-Day Average</div>
+      <div class="mt-week-summary">
+        <div class="mt-week-cell"><span class="mt-week-num">${avg('cal')}</span><span class="mt-week-lbl">kcal</span></div>
+        <div class="mt-week-cell"><span class="mt-week-num" style="color:var(--protein)">${avg('protein')}g</span><span class="mt-week-lbl">protein</span></div>
+        <div class="mt-week-cell"><span class="mt-week-num" style="color:var(--fat)">${avg('fat')}g</span><span class="mt-week-lbl">fat</span></div>
+        <div class="mt-week-cell"><span class="mt-week-num" style="color:var(--carb)">${avg('carb')}g</span><span class="mt-week-lbl">carbs</span></div>
+      </div>
+
+      <div class="mt-section-title">History</div>
+      <div id="mt-hist-list">
+        ${histDates.length === 0 ? '<div class="mt-empty">No earlier days logged yet.</div>' :
+          histDates.map(d => {
+            const dt = totalsFor(d);
+            const { label } = fmtDateLabel(d);
+            const cp = Math.min(pct(dt.cal, tg.cal), 100);
+            const pp = Math.min(pct(dt.protein, tg.protein), 100);
+            const fp = Math.min(pct(dt.fat, tg.fat), 100);
+            const cbp = Math.min(pct(dt.carb, tg.carb), 100);
+            return `
+              <div class="mt-hist-item" data-date="${d}">
+                <div class="mt-hist-head"><span class="mt-hist-date">${label}</span><span class="mt-hist-cal" style="color:${dt.cal>tg.cal?'var(--over)':'var(--ink)'}">${dt.cal} kcal</span></div>
+                <div class="mt-hist-bars">
+                  <div><span style="width:${cp}%; background:var(--ink)"></span></div>
+                  <div><span style="width:${pp}%; background:var(--protein)"></span></div>
+                  <div><span style="width:${fp}%; background:var(--fat)"></span></div>
+                  <div><span style="width:${cbp}%; background:var(--carb)"></span></div>
+                </div>
+                <div class="mt-hist-detail"><span>P ${dt.protein}g</span><span>F ${dt.fat}g</span><span>C ${dt.carb}g</span></div>
+              </div>`;
+          }).join('')
+        }
+      </div>
+
+      <div class="mt-note">Values are self-reported estimates. Data lives in your public GitHub repo (github.com/${cfg.user}/${cfg.repo}) — Claude reads it via the raw file URL when you ask for a check-in.</div>
+    `;
+
+    document.getElementById('mt-prev').onclick = () => { state.currentDate = shiftDate(state.currentDate, -1); render(); };
+    const nextBtn = document.getElementById('mt-next');
+    if (nextBtn) nextBtn.onclick = () => { state.currentDate = shiftDate(state.currentDate, 1); render(); };
+
+    document.getElementById('mt-add-btn').onclick = async () => {
+      const name = document.getElementById('mt-in-name').value.trim();
+      const cal = Number(document.getElementById('mt-in-cal').value) || 0;
+      const protein = Number(document.getElementById('mt-in-protein').value) || 0;
+      const fat = Number(document.getElementById('mt-in-fat').value) || 0;
+      const carb = Number(document.getElementById('mt-in-carb').value) || 0;
+      const meal = document.getElementById('mt-in-meal').value;
+      if (!name || cal <= 0) return;
+      const now = new Date();
+      state.entries.push({
+        id: 'e-' + Date.now() + '-' + Math.random().toString(36).slice(2,7),
+        date: state.currentDate, meal, name, cal, protein, fat, carb,
+        time: String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0'),
+      });
+      await persist();
+    };
+
+    root.querySelectorAll('.mt-del').forEach(btn => {
+      btn.onclick = async () => {
+        state.entries = state.entries.filter(e => e.id !== btn.dataset.id);
+        await persist();
+      };
+    });
+    root.querySelectorAll('.mt-hist-item').forEach(item => {
+      item.onclick = () => { state.currentDate = item.dataset.date; render(); window.scrollTo({top:0, behavior:'smooth'}); };
+    });
+  }
+
+  cfg = loadCfg();
+  if (cfg) { loadData(); } else { render(); }
+})();
+</script>
+</body>
+</html>
