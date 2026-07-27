@@ -26,16 +26,17 @@
     --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
     --font-mono: 'SF Mono', 'Roboto Mono', ui-monospace, Menlo, monospace;
   }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; background: var(--bg); }
-  body { font-family: var(--font-body); color: var(--ink); }
-  #mt-root { padding: 24px 16px 60px; padding-top: max(24px, env(safe-area-inset-top)); max-width: 640px; margin: 0 auto; min-height: 100vh; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: var(--bg); overscroll-behavior-y: none; }
+  body { font-family: var(--font-body); color: var(--ink); touch-action: manipulation; }
+  #mt-root { padding: 20px 16px 96px; padding-top: max(20px, env(safe-area-inset-top)); max-width: 640px; margin: 0 auto; min-height: 100vh; }
+  button { touch-action: manipulation; }
 
   .mt-eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 0 0 4px; }
   .mt-title { font-family: var(--font-display); font-weight: 800; font-stretch: condensed; font-size: 30px; letter-spacing: -0.01em; margin: 0 0 18px; }
 
   .mt-datebar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-  .mt-datebar button { background: var(--ink); color: var(--bg); border: none; width: 34px; height: 34px; font-size: 16px; cursor: pointer; font-family: var(--font-mono); }
+  .mt-datebar button { background: var(--ink); color: var(--bg); border: none; width: 44px; height: 44px; font-size: 18px; cursor: pointer; font-family: var(--font-mono); border-radius: 4px; }
   .mt-datebar button:disabled { opacity: 0.3; cursor: default; }
   .mt-date-label { font-family: var(--font-mono); font-size: 15px; font-weight: 600; text-align: center; flex: 1; }
   .mt-date-sub { color: var(--muted); font-size: 11px; display: block; margin-top: 2px; font-weight: 400; }
@@ -58,23 +59,23 @@
   .mt-section-title { font-family: var(--font-display); font-weight: 800; font-stretch: condensed; font-size: 18px; text-transform: uppercase; letter-spacing: 0.02em; border-bottom: 3px solid var(--ink); padding-bottom: 6px; margin: 28px 0 12px; }
   .mt-form { background: var(--panel); border: 1px solid var(--line); padding: 14px; margin-bottom: 20px; }
   .mt-form-row { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
-  .mt-form input, .mt-form select { font-family: var(--font-body); border: 1px solid #C9C4B4; background: #fff; padding: 8px; font-size: 13px; width: 100%; color: var(--ink); }
+  .mt-form input, .mt-form select { font-family: var(--font-body); border: 1px solid #C9C4B4; background: #fff; padding: 12px 10px; font-size: 16px; width: 100%; color: var(--ink); border-radius: 4px; min-height: 44px; }
   .mt-form input:focus, .mt-form select:focus { outline: 2px solid var(--ink); outline-offset: -1px; }
   .mt-form-name { flex: 2 1 160px; }
   .mt-form-num { flex: 1 1 70px; min-width: 0; }
   .mt-form-meal { flex: 1 1 100px; }
   .mt-form label { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 3px; letter-spacing: 0.05em; }
-  .mt-add-btn { background: var(--ink); color: var(--bg); border: none; padding: 10px 16px; font-family: var(--font-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; width: 100%; }
+  .mt-add-btn { background: var(--ink); color: var(--bg); border: none; padding: 14px 16px; font-family: var(--font-mono); font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; width: 100%; min-height: 48px; border-radius: 4px; }
   .mt-add-btn:hover { opacity: 0.85; }
   .mt-add-btn:disabled { opacity: 0.5; cursor: default; }
 
   .mt-log-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
   .mt-log-meal { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em; }
   .mt-log-macros { font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-align: right; }
-  .mt-del { background: none; border: none; color: var(--over); cursor: pointer; font-size: 16px; padding: 0 0 0 10px; line-height: 1; }
+  .mt-del { background: none; border: none; color: var(--over); cursor: pointer; font-size: 20px; padding: 10px 0 10px 14px; line-height: 1; min-width: 32px; min-height: 44px; }
   .mt-empty { color: var(--muted); font-size: 13px; padding: 16px 0; text-align: center; font-style: italic; }
 
-  .mt-hist-item { background: var(--panel); border: 1px solid var(--line); padding: 10px 12px; margin-bottom: 8px; cursor: pointer; }
+  .mt-hist-item { background: var(--panel); border: 1px solid var(--line); padding: 14px 12px; margin-bottom: 8px; cursor: pointer; }
   .mt-hist-head { display: flex; justify-content: space-between; align-items: center; }
   .mt-hist-date { font-family: var(--font-mono); font-weight: 700; font-size: 13px; }
   .mt-hist-cal { font-family: var(--font-mono); font-size: 13px; }
@@ -90,6 +91,7 @@
 
   .mt-note { font-family: var(--font-mono); font-size: 11px; color: var(--muted); background: var(--panel); border-left: 3px solid var(--ink); padding: 8px 10px; margin-bottom: 20px; }
   .mt-loading { text-align: center; padding: 60px 0; font-family: var(--font-mono); color: var(--muted); }
+  .mt-fab { position: fixed; right: 18px; bottom: max(18px, env(safe-area-inset-bottom)); width: 56px; height: 56px; border-radius: 50%; background: var(--ink); color: var(--bg); border: none; font-size: 28px; line-height: 1; cursor: pointer; box-shadow: 0 4px 14px rgba(26,26,26,0.35); z-index: 5; display: flex; align-items: center; justify-content: center; }
   .mt-sync { font-family: var(--font-mono); font-size: 10px; color: var(--muted); text-align: right; margin-top: -12px; margin-bottom: 16px; }
   .mt-sync.err { color: var(--over); }
 
@@ -99,7 +101,7 @@
   .mt-modal h2 { font-family: var(--font-display); font-stretch: condensed; font-size: 20px; margin: 0 0 12px; }
   .mt-modal p { font-size: 12px; color: var(--muted); margin: 0 0 14px; line-height: 1.5; }
   .mt-modal label { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; color: var(--muted); display: block; margin: 10px 0 3px; letter-spacing: 0.05em; }
-  .mt-modal input { width: 100%; font-family: var(--font-body); border: 1px solid #C9C4B4; padding: 9px; font-size: 13px; }
+  .mt-modal input { width: 100%; font-family: var(--font-body); border: 1px solid #C9C4B4; padding: 12px 10px; font-size: 16px; border-radius: 4px; min-height: 44px; }
   .mt-modal-err { color: var(--over); font-family: var(--font-mono); font-size: 11px; margin-top: 10px; }
 </style>
 </head>
@@ -271,7 +273,7 @@
 
     root.innerHTML = `
       <p class="mt-eyebrow">Daily Intake Ledger &middot; dairy-free &middot; synced to github.com/${cfg.user}/${cfg.repo}
-        <button id="mt-sync-btn" style="float:right; background:none; border:1px solid var(--muted); color:var(--muted); font-family:var(--font-mono); font-size:9px; padding:2px 7px; cursor:pointer; text-transform:uppercase; letter-spacing:0.05em;">&#8635; Refresh</button>
+        <button id="mt-sync-btn" style="float:right; background:none; border:1px solid var(--muted); color:var(--muted); font-family:var(--font-mono); font-size:10px; padding:6px 10px; min-height:32px; cursor:pointer; text-transform:uppercase; letter-spacing:0.05em; border-radius:4px;">&#8635; Refresh</button>
       </p>
       <h1 class="mt-title">Macro Log</h1>
 
@@ -299,7 +301,7 @@
       <div class="mt-section-title">Log a Meal</div>
       <div class="mt-form">
         <div class="mt-form-row">
-          <div class="mt-form-name" style="flex:3 1 220px;"><label>What did you eat?</label><input id="mt-in-name" type="text" placeholder="e.g. Turkey chili, one bowl, no cheese" /></div>
+          <div class="mt-form-name" style="flex:3 1 220px;"><label>What did you eat?</label><input id="mt-in-name" type="text" placeholder="e.g. Turkey chili, one bowl, no cheese" autocapitalize="sentences" autocomplete="off" autocorrect="on" enterkeyhint="done" /></div>
           <div class="mt-form-meal"><label>Meal</label>
             <select id="mt-in-meal"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option></select>
           </div>
@@ -360,6 +362,7 @@
       </div>
 
       <div class="mt-note">Just type what you ate — no numbers needed. Entries show "estimating&hellip;" until Claude fills in the macros, which happens the next time you're in chat and mention the log (Claude reads and writes this repo directly). Dairy-free is assumed by default; call it out in the text if something isn't.</div>
+      <button class="mt-fab" id="mt-fab" aria-label="Quick log a meal">+</button>
     `;
 
     document.getElementById('mt-prev').onclick = () => { state.currentDate = shiftDate(state.currentDate, -1); render(); };
@@ -391,6 +394,12 @@
 
     const syncBtn = document.getElementById('mt-sync-btn');
     if (syncBtn) syncBtn.onclick = async () => { state.loaded = false; render(); await loadData(); };
+
+    const fab = document.getElementById('mt-fab');
+    if (fab) fab.onclick = () => {
+      nameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => nameInput.focus(), 300);
+    };
 
     root.querySelectorAll('.mt-del').forEach(btn => {
       btn.onclick = async () => {
