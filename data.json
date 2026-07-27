@@ -37,12 +37,12 @@
       "id": "e-1785186330459-lvk18",
       "date": "2026-07-27",
       "meal": "Lunch",
-      "name": "Can of safe catch tuna in water, tablespoon of avocado oil mayo on 2 x Dave’s bread",
-      "cal": null,
-      "protein": null,
-      "fat": null,
-      "carb": null,
-      "status": "pending",
+      "name": "Can of safe catch tuna in water, tablespoon of avocado oil mayo on 2 x Dave\u2019s bread",
+      "cal": 430,
+      "protein": 34,
+      "fat": 16,
+      "carb": 44,
+      "status": "estimated",
       "time": "14:05"
     }
   ],
