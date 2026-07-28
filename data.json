@@ -254,10 +254,10 @@
       "date": "2026-07-28",
       "meal": "Breakfast",
       "name": "Dave's Killer Bread Everything Protein Bagel",
-      "cal": 260,
+      "cal": 270,
       "protein": 13,
-      "fat": 2,
-      "carb": 47,
+      "fat": 6,
+      "carb": 46,
       "status": "estimated",
       "time": "09:17"
     },
