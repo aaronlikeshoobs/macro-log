@@ -176,12 +176,56 @@
       "carb": 17,
       "status": "estimated",
       "time": "18:36"
+    },
+    {
+      "id": "e-1785206111627-6mtdi",
+      "date": "2026-07-27",
+      "meal": "Snack",
+      "name": "Homemade vegan apple and pear pie with crumble top and a scoop of oatly vanilla ice cream",
+      "cal": null,
+      "protein": null,
+      "fat": null,
+      "carb": null,
+      "status": "estimating",
+      "time": "19:35"
     }
   ],
+  "targetPresets": {
+    "standard": {
+      "cal": 1750,
+      "protein": 170,
+      "fat": 55,
+      "carb": 145,
+      "label": "Standard"
+    },
+    "rest": {
+      "label": "Rest Day",
+      "cal": 1660,
+      "protein": 170,
+      "fat": 60,
+      "carb": 110
+    },
+    "longRide": {
+      "label": "Long Ride",
+      "cal": 2215,
+      "protein": 170,
+      "fat": 55,
+      "carb": 260
+    },
+    "heavyLower": {
+      "label": "Heavy Lower",
+      "cal": 1915,
+      "protein": 180,
+      "fat": 55,
+      "carb": 175
+    }
+  },
+  "dayTypes": {},
   "targets": {
     "cal": 1750,
     "protein": 170,
     "fat": 55,
-    "carb": 145
+    "carb": 145,
+    "label": "Standard"
   }
 }
