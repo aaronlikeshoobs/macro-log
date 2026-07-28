@@ -75,6 +75,22 @@
   .mt-log-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 13px; min-height: 44px; }
   .mt-log-meal { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em; margin-top: 6px; }
   .mt-log-macros { font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-align: right; }
+  .mt-edit-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 15px; padding: 10px 6px; line-height: 1; min-width: 36px; min-height: 44px; }
+  .mt-log-editing { flex-direction: column; align-items: stretch; gap: 8px; padding: 12px 0; }
+  .mt-edit-input { font-family: var(--font-body); border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 10px 10px; font-size: 15px; border-radius: 6px; min-height: 42px; }
+  .mt-edit-macros { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .mt-edit-macros .mt-edit-input { font-family: var(--font-mono); text-align: center; padding: 10px 4px; }
+  .mt-edit-actions { display: flex; gap: 8px; }
+  .mt-edit-save, .mt-edit-cancel, .mt-rf-log, .mt-rf-cancel { flex: 1; font-family: var(--font-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; padding: 10px 8px; border-radius: 6px; cursor: pointer; min-height: 40px; border: 1px solid var(--line); }
+  .mt-edit-save, .mt-rf-log { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .mt-edit-cancel, .mt-rf-cancel { background: transparent; color: var(--muted); }
+
+  .mt-recent-label { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 8px; }
+  .mt-recent-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px; -webkit-overflow-scrolling: touch; }
+  .mt-recent-chip { flex-shrink: 0; display: flex; align-items: center; gap: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 6px 6px 6px 14px; min-height: 44px; cursor: pointer; }
+  .mt-recent-chip .rc-name { font-size: 12.5px; font-weight: 600; white-space: nowrap; max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
+  .mt-recent-chip .rc-macros { font-family: var(--font-mono); font-size: 10px; color: var(--muted); white-space: nowrap; }
+  .mt-recent-chip .rc-edit { background: var(--bg); border: none; color: var(--muted); border-radius: 50%; width: 32px; height: 32px; flex-shrink: 0; font-size: 13px; cursor: pointer; }
   .mt-del { background: none; border: none; color: var(--over); cursor: pointer; font-size: 22px; padding: 10px 4px 10px 16px; line-height: 1; min-width: 44px; min-height: 44px; }
   .mt-empty { color: var(--muted); font-size: 13px; padding: 18px 0; text-align: center; font-style: italic; }
 
@@ -307,6 +323,98 @@
   }
   function pct(val, target) { return target ? Math.round((val/target)*100) : 0; }
   function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+
+  let editingEntryId = null;
+  let editingRecentId = null;
+
+  function renderRecentEditPanel(f) {
+    if (!f) return '';
+    return `
+      <div class="mt-form" style="margin-top:-6px;">
+        <div class="mt-form-row">
+          <div class="mt-form-name" style="flex:1 1 100%;"><label>Name</label><input class="mt-edit-input" id="rf-name" value="${escapeHtml(f.name)}" /></div>
+        </div>
+        <div class="mt-edit-macros" style="margin-bottom:10px;">
+          <input class="mt-edit-input" id="rf-cal" type="number" inputmode="numeric" value="${f.cal}" placeholder="kcal" />
+          <input class="mt-edit-input" id="rf-protein" type="number" inputmode="numeric" value="${f.protein}" placeholder="P" />
+          <input class="mt-edit-input" id="rf-fat" type="number" inputmode="numeric" value="${f.fat}" placeholder="F" />
+          <input class="mt-edit-input" id="rf-carb" type="number" inputmode="numeric" value="${f.carb}" placeholder="C" />
+        </div>
+        <div class="mt-edit-actions">
+          <button class="mt-rf-log" id="rf-log-btn">Log this</button>
+          <button class="mt-rf-cancel" id="rf-cancel-btn">Cancel</button>
+        </div>
+      </div>`;
+  }
+
+  // Most-recently-logged unique foods, newest first — no manual curation, just your own history.
+  function getRecentFoods(limit) {
+    const seen = new Map();
+    const mealEntries = state.entries
+      .filter(e => e.kind !== 'symptom' && e.status === 'estimated' && e.name)
+      .slice()
+      .sort((a, b) => (b.date + (b.time || '')).localeCompare(a.date + (a.time || '')));
+    for (const e of mealEntries) {
+      const key = e.name.trim().toLowerCase();
+      if (!seen.has(key)) seen.set(key, e);
+      if (seen.size >= limit) break;
+    }
+    return Array.from(seen.values());
+  }
+
+  function inferMealForNow() {
+    const h = new Date().getHours();
+    if (h < 11) return 'Breakfast';
+    if (h < 15) return 'Lunch';
+    if (h < 18) return 'Snack';
+    return 'Dinner';
+  }
+
+  async function logInstant(food, mealOverride) {
+    const now = new Date();
+    const timeStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+    const mealSel = document.getElementById('mt-in-meal');
+    const meal = mealOverride || (mealSel ? mealSel.value : inferMealForNow());
+    const entry = {
+      id: 'e-' + Date.now() + '-' + Math.random().toString(36).slice(2,7),
+      date: state.currentDate, meal, name: food.name,
+      cal: food.cal, protein: food.protein, fat: food.fat, carb: food.carb,
+      status: 'estimated', time: timeStr,
+    };
+    state.entries.push(entry);
+    const q = loadQueue(); q.push(entry); saveQueue(q);
+    render();
+    await persist();
+  }
+
+  function renderLogItem(e) {
+    if (editingEntryId === e.id) {
+      return `
+        <div class="mt-log-item mt-log-editing">
+          <input class="mt-edit-input" data-field="name" value="${escapeHtml(e.name)}" />
+          <div class="mt-edit-macros">
+            <input class="mt-edit-input" data-field="cal" type="number" inputmode="numeric" value="${e.cal ?? ''}" placeholder="kcal" />
+            <input class="mt-edit-input" data-field="protein" type="number" inputmode="numeric" value="${e.protein ?? ''}" placeholder="P" />
+            <input class="mt-edit-input" data-field="fat" type="number" inputmode="numeric" value="${e.fat ?? ''}" placeholder="F" />
+            <input class="mt-edit-input" data-field="carb" type="number" inputmode="numeric" value="${e.carb ?? ''}" placeholder="C" />
+          </div>
+          <div class="mt-edit-actions">
+            <button class="mt-edit-save" data-id="${e.id}">Save</button>
+            <button class="mt-edit-cancel" data-id="${e.id}">Cancel</button>
+          </div>
+        </div>`;
+    }
+    const editable = e.status === 'estimated';
+    return `
+      <div class="mt-log-item">
+        <div>${escapeHtml(e.name)}</div>
+        <div style="display:flex; align-items:center;">
+          <div class="mt-log-macros">${e.status === 'estimating' ? '<span style="color:var(--fat)">calculating&hellip;</span>' : e.status === 'pending' ? '<span style="color:var(--over)">couldn\'t estimate</span>' : `${e.cal} kcal &middot; P${e.protein} F${e.fat} C${e.carb}`}</div>
+          ${editable ? `<button class="mt-edit-btn" data-id="${e.id}" aria-label="Edit macros">&#9998;</button>` : ''}
+          <button class="mt-del" data-id="${e.id}" aria-label="Delete entry">&times;</button>
+        </div>
+      </div>`;
+  }
   function targetForDate(d) {
     const key = state.dayTypes[d];
     return (key && state.targetPresets[key]) || state.targetPresets.standard;
@@ -431,6 +539,7 @@
     const avg = (key) => last7.length ? Math.round(last7.reduce((s,d)=>s+totalsFor(d)[key],0)/last7.length) : 0;
     const histDates = allDates.filter(d => d !== state.currentDate).sort().reverse().slice(0, 14);
     const insights = computeInsights(last7, avg, allDates, symptomDates);
+    const recentFoods = getRecentFoods(8);
 
     root.innerHTML = (state.needsPassword ? passwordModalHtml() : '') + `
       <p class="mt-eyebrow">🥗 Daily Intake Ledger &middot; dairy-free &middot; synced to github.com/aaronlikeshoobs/macro-log
@@ -481,6 +590,19 @@
       ` : ''}
 
       <div class="mt-section-title">📝 Log an Entry</div>
+      ${state.entryTab === 'meal' && recentFoods.length ? `
+        <div class="mt-recent-label">🕐 Recent — tap to log instantly</div>
+        <div class="mt-recent-row">
+          ${recentFoods.map(f => `
+            <div class="mt-recent-chip" data-recent-id="${f.id}">
+              <span class="rc-name">${escapeHtml(f.name)}</span>
+              <span class="rc-macros">${f.cal}kcal</span>
+              <button class="rc-edit" data-recent-edit-id="${f.id}" aria-label="Edit before logging">&#9998;</button>
+            </div>
+          `).join('')}
+        </div>
+        ${editingRecentId ? renderRecentEditPanel(recentFoods.find(f => f.id === editingRecentId)) : ''}
+      ` : ''}
       <div class="mt-tabs">
         <button class="mt-tab ${state.entryTab==='meal' ? 'active' : ''}" data-tab="meal">🍴 Meal</button>
         <button class="mt-tab ${state.entryTab==='symptom' ? 'symptom-active' : ''}" data-tab="symptom">⚠️ Upset stomach / BM</button>
@@ -523,15 +645,7 @@
           dayEntries.length === 0 ? '' :
           Object.keys(mealGroups).map(meal => `
             <div class="mt-log-meal" style="margin-top:10px">${meal}</div>
-            ${mealGroups[meal].map(e => `
-              <div class="mt-log-item">
-                <div>${escapeHtml(e.name)}</div>
-                <div style="display:flex; align-items:center;">
-                  <div class="mt-log-macros">${e.status === 'estimating' ? '<span style="color:var(--fat)">calculating&hellip;</span>' : e.status === 'pending' ? '<span style="color:var(--over)">couldn\'t estimate</span>' : `${e.cal} kcal &middot; P${e.protein} F${e.fat} C${e.carb}`}</div>
-                  <button class="mt-del" data-id="${e.id}" aria-label="Delete entry">&times;</button>
-                </div>
-              </div>
-            `).join('')}
+            ${mealGroups[meal].map(e => renderLogItem(e)).join('')}
           `).join('')
         }
       </div>
@@ -585,6 +699,55 @@
 
     root.querySelectorAll('.mt-preset-pill').forEach(btn => {
       btn.onclick = async () => { state.dayTypes[state.currentDate] = btn.dataset.preset; await persist(); };
+    });
+
+    root.querySelectorAll('.mt-recent-chip').forEach(chip => {
+      chip.addEventListener('click', (ev) => {
+        if (ev.target.closest('.rc-edit')) return;
+        const food = recentFoods.find(f => f.id === chip.dataset.recentId);
+        if (food) logInstant(food);
+      });
+    });
+    root.querySelectorAll('.rc-edit').forEach(btn => {
+      btn.onclick = (ev) => { ev.stopPropagation(); editingRecentId = btn.dataset.recentEditId; render(); };
+    });
+    const rfLogBtn = document.getElementById('rf-log-btn');
+    if (rfLogBtn) rfLogBtn.onclick = async () => {
+      const food = {
+        name: document.getElementById('rf-name').value.trim(),
+        cal: Number(document.getElementById('rf-cal').value) || 0,
+        protein: Number(document.getElementById('rf-protein').value) || 0,
+        fat: Number(document.getElementById('rf-fat').value) || 0,
+        carb: Number(document.getElementById('rf-carb').value) || 0,
+      };
+      if (!food.name) return;
+      editingRecentId = null;
+      await logInstant(food);
+    };
+    const rfCancelBtn = document.getElementById('rf-cancel-btn');
+    if (rfCancelBtn) rfCancelBtn.onclick = () => { editingRecentId = null; render(); };
+
+    root.querySelectorAll('.mt-edit-btn').forEach(btn => {
+      btn.onclick = () => { editingEntryId = btn.dataset.id; render(); };
+    });
+    root.querySelectorAll('.mt-edit-cancel').forEach(btn => {
+      btn.onclick = () => { editingEntryId = null; render(); };
+    });
+    root.querySelectorAll('.mt-edit-save').forEach(btn => {
+      btn.onclick = async () => {
+        const id = btn.dataset.id;
+        const entry = state.entries.find(e => e.id === id);
+        if (!entry) return;
+        const row = btn.closest('.mt-log-item');
+        row.querySelectorAll('.mt-edit-input').forEach(inp => {
+          const field = inp.dataset.field;
+          if (field === 'name') { const v = inp.value.trim(); if (v) entry.name = v; }
+          else entry[field] = Number(inp.value) || 0;
+        });
+        entry.status = 'estimated';
+        editingEntryId = null;
+        await persist();
+      };
     });
 
     attachPasswordModal();
