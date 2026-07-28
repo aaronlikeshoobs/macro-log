@@ -178,15 +178,51 @@
       "time": "18:36"
     },
     {
-      "id": "e-1785206111627-6mtdi",
+      "id": "e-1785206114355-0-62i",
       "date": "2026-07-27",
       "meal": "Snack",
-      "name": "Homemade vegan apple and pear pie with crumble top and a scoop of oatly vanilla ice cream",
-      "cal": null,
-      "protein": null,
-      "fat": null,
-      "carb": null,
-      "status": "estimating",
+      "name": "Apple and pear pie filling",
+      "cal": 280,
+      "protein": 2,
+      "fat": 8,
+      "carb": 50,
+      "status": "estimated",
+      "time": "19:35"
+    },
+    {
+      "id": "e-1785206114355-1-6c1",
+      "date": "2026-07-27",
+      "meal": "Snack",
+      "name": "Pie crust",
+      "cal": 320,
+      "protein": 4,
+      "fat": 16,
+      "carb": 40,
+      "status": "estimated",
+      "time": "19:35"
+    },
+    {
+      "id": "e-1785206114355-2-rxl",
+      "date": "2026-07-27",
+      "meal": "Snack",
+      "name": "Crumble topping",
+      "cal": 180,
+      "protein": 3,
+      "fat": 9,
+      "carb": 22,
+      "status": "estimated",
+      "time": "19:35"
+    },
+    {
+      "id": "e-1785206114355-3-98b",
+      "date": "2026-07-27",
+      "meal": "Snack",
+      "name": "Oatly vanilla ice cream",
+      "cal": 180,
+      "protein": 3,
+      "fat": 9,
+      "carb": 20,
+      "status": "estimated",
       "time": "19:35"
     }
   ],
