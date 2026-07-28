@@ -226,15 +226,15 @@
       "time": "19:35"
     },
     {
-      "id": "e-1785248768276-8gh7v",
+      "id": "e-1785248770977-0-yw7",
       "date": "2026-07-28",
       "meal": "Snack",
-      "name": "Celsius",
-      "cal": null,
-      "protein": null,
-      "fat": null,
-      "carb": null,
-      "status": "estimating",
+      "name": "Celsius Energy Drink",
+      "cal": 10,
+      "protein": 0,
+      "fat": 0,
+      "carb": 2,
+      "status": "estimated",
       "time": "07:26"
     }
   ],
