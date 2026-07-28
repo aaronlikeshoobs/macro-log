@@ -118,6 +118,16 @@
   .mt-modal label { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; color: var(--muted); display: block; margin: 10px 0 4px; letter-spacing: 0.05em; }
   .mt-modal input { width: 100%; font-family: var(--font-body); border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 13px 12px; font-size: 16px; border-radius: 6px; min-height: 46px; }
   .mt-modal-err { color: var(--over); font-family: var(--font-mono); font-size: 11px; margin-top: 10px; }
+
+  .mt-preset-row { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+  .mt-preset-pill { background: var(--panel); border: 1px solid var(--line); color: var(--muted); font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; padding: 9px 13px; border-radius: 20px; cursor: pointer; min-height: 38px; }
+  .mt-preset-pill.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .mt-priority { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11.5px; padding-top: 12px; border-top: 1px solid var(--line); margin-top: 4px; }
+
+  .mt-trends { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 4px 16px; margin-bottom: 22px; }
+  .mt-insight { display: flex; align-items: flex-start; gap: 10px; padding: 13px 0; border-bottom: 1px solid var(--line); font-size: 12.5px; line-height: 1.5; }
+  .mt-insight:last-child { border-bottom: none; }
+  .mt-insight .em { flex-shrink: 0; font-size: 15px; width: 20px; text-align: center; }
 </style>
 </head>
 <body>
@@ -129,6 +139,15 @@
 (function() {
   const root = document.getElementById('mt-root');
   const DEFAULT_TARGETS = { cal: 1750, protein: 170, fat: 55, carb: 145 };
+  function deriveDefaultPresets(std) {
+    const mk = (protein, fat, carb, label) => ({ label, cal: protein*4 + fat*9 + carb*4, protein, fat, carb });
+    return {
+      standard:   { ...std, label: 'Standard' },
+      rest:       mk(std.protein, std.fat + 5, Math.max(0, std.carb - 35), 'Rest Day'),
+      longRide:   mk(std.protein, std.fat, std.carb + 115, 'Long Ride'),
+      heavyLower: mk(std.protein + 10, std.fat, std.carb + 30, 'Heavy Lower'),
+    };
+  }
   const SEED_ENTRIES = [];
   const LS_CFG = 'mt-github-cfg';
 
@@ -136,7 +155,13 @@
   let cfg = null; // { user, repo, token }
   let sha = null; // current data.json sha, for updates
   const LS_QUEUE = 'mt-offline-queue';
-  let state = { entries: SEED_ENTRIES, targets: DEFAULT_TARGETS, currentDate: todayStr(), loaded: false, syncErr: null, syncing: false, entryTab: 'meal', severity: 'Mild' };
+  let state = {
+    entries: SEED_ENTRIES,
+    targetPresets: deriveDefaultPresets(DEFAULT_TARGETS),
+    dayTypes: {},
+    currentDate: todayStr(), loaded: false, syncErr: null, syncing: false, entryTab: 'meal', severity: 'Mild',
+    vitalsWeight: null,
+  };
 
   function loadQueue() { try { return JSON.parse(localStorage.getItem(LS_QUEUE) || '[]'); } catch(e) { return []; } }
   function saveQueue(q) { localStorage.setItem(LS_QUEUE, JSON.stringify(q)); }
@@ -176,9 +201,15 @@
       const remoteEntries = latest.entries || [];
       const remoteIds = new Set(remoteEntries.map(e => e.id));
       const oursOnly = (dataObj.entries || []).filter(e => !remoteIds.has(e.id));
-      const merged = { entries: [...remoteEntries, ...oursOnly], targets: dataObj.targets || latest.targets };
+      const merged = {
+        entries: [...remoteEntries, ...oursOnly],
+        targetPresets: dataObj.targetPresets || latest.targetPresets,
+        dayTypes: { ...(latest.dayTypes || {}), ...(dataObj.dayTypes || {}) },
+        targets: dataObj.targets || latest.targets,
+      };
       state.entries = merged.entries;
-      state.targets = merged.targets;
+      state.targetPresets = merged.targetPresets;
+      state.dayTypes = merged.dayTypes;
       return ghPut(merged, true);
     }
     if (!res.ok) throw new Error('GitHub write failed: ' + res.status);
@@ -211,7 +242,8 @@
     try {
       const data = await ghGet();
       state.entries = data.entries || SEED_ENTRIES;
-      state.targets = data.targets || DEFAULT_TARGETS;
+      state.targetPresets = data.targetPresets || deriveDefaultPresets(data.targets || DEFAULT_TARGETS);
+      state.dayTypes = data.dayTypes || {};
       state.syncErr = null;
     } catch (e) {
       state.syncErr = e.message;
@@ -225,12 +257,17 @@
     state.loaded = true;
     render();
     if (queue.length && !state.syncErr) { await persist(); } // flush queue now that we're connected
+    // best-effort, non-blocking: pull weight history from Vitals Log for the trends section
+    fetch('https://raw.githubusercontent.com/aaronlikeshoobs/vitals-log/main/data.json')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d && d.weight) { state.vitalsWeight = d.weight; render(); } })
+      .catch(() => {});
   }
 
   async function persist() {
     state.syncing = true; render();
     try {
-      await ghPut({ entries: state.entries, targets: state.targets });
+      await ghPut({ entries: state.entries, targetPresets: state.targetPresets, dayTypes: state.dayTypes, targets: state.targetPresets.standard });
       state.syncErr = null;
       saveQueue([]); // fully synced, clear any queued backup
     } catch (e) {
@@ -259,17 +296,35 @@
   }
   function pct(val, target) { return target ? Math.round((val/target)*100) : 0; }
   function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+  function targetForDate(d) {
+    const key = state.dayTypes[d];
+    return (key && state.targetPresets[key]) || state.targetPresets.standard;
+  }
+  function rangeFor(target, tol) { return { lo: Math.round(target * (1 - tol)), hi: Math.round(target * (1 + tol)) }; }
 
-  function macroRow(label, colorVar, val, target, unit) {
+  // mode 'min': never flag "over" — more is fine (protein). mode 'range': flag over only outside tolerance.
+  function macroRow(label, colorVar, val, target, unit, opts) {
+    opts = opts || {};
+    const tol = opts.tolerance != null ? opts.tolerance : 0.12;
+    const over = opts.mode !== 'min' && val > target * (1 + tol);
+    const met = opts.mode === 'min' && val >= target;
     const p = pct(val, target);
-    const fillColor = p > 100 ? 'var(--over)' : `var(${colorVar})`;
+    const fillColor = over ? 'var(--over)' : `var(${colorVar})`;
+    const pctColor = over ? 'var(--over)' : met ? 'var(--protein)' : 'var(--ink)';
     return `
       <div class="mt-row">
         <div class="mt-row-name"><span class="mt-swatch" style="background:var(${colorVar})"></span>${label}</div>
-        <div class="mt-row-amt">${val}${unit} / ${target}${unit}</div>
-        <div class="mt-row-pct" style="color:${p>100?'var(--over)':'var(--ink)'}">${p}%</div>
+        <div class="mt-row-amt">${val}${unit} / ${opts.mode === 'min' ? target + unit + ' min' : target + unit}</div>
+        <div class="mt-row-pct" style="color:${pctColor}">${p}%</div>
         <div class="mt-bar-track"><div class="mt-bar-fill" style="width:${Math.min(p,100)}%; background:${fillColor}"></div></div>
       </div>`;
+  }
+
+  function priorityHint(t, tg, calRange) {
+    if (t.protein < tg.protein) return { icon: '🎯', text: `${tg.protein - t.protein}g more protein to hit today's minimum` };
+    if (t.cal > calRange.hi) return { icon: '⚠️', text: `${t.cal - tg.cal} kcal over — protein's covered, ease off the rest` };
+    if (t.protein === 0 && t.cal === 0) return { icon: '📝', text: 'Nothing logged yet today' };
+    return { icon: '✅', text: 'Protein target met, calories on track' };
   }
 
   function renderSetupModal(prefill, errMsg) {
@@ -300,19 +355,57 @@
     };
   }
 
+  function computeInsights(last7, avg, allDates, symptomDates) {
+    const insights = [];
+    if (last7.length) {
+      const hit = last7.filter(d => totalsFor(d).protein >= targetForDate(d).protein).length;
+      insights.push({ icon: '🎯', text: `Protein target hit ${hit}/${last7.length} of the last ${last7.length} logged days` });
+      const calAvg = avg('cal');
+      const stdCal = state.targetPresets.standard.cal;
+      const diff = calAvg - stdCal;
+      insights.push({ icon: '📊', text: `7-day average: ${calAvg} kcal (${diff >= 0 ? '+' : ''}${diff} vs standard target)` });
+    }
+    if (state.vitalsWeight && state.vitalsWeight.length >= 8) {
+      const sorted = [...state.vitalsWeight].sort((a,b) => a.date.localeCompare(b.date));
+      const recent7 = sorted.slice(-7).map(w => w.value);
+      const prior7 = sorted.slice(-14, -7).map(w => w.value);
+      if (recent7.length && prior7.length) {
+        const r = recent7.reduce((a,b) => a+b, 0) / recent7.length;
+        const p = prior7.reduce((a,b) => a+b, 0) / prior7.length;
+        const delta = r - p;
+        insights.push({ icon: '⚖️', text: `Weight: ${r.toFixed(1)} lb (7-day avg), ${delta >= 0 ? '+' : ''}${delta.toFixed(1)} lb vs the prior week` });
+      }
+    }
+    const symDates = [...symptomDates];
+    const nonSymDates = allDates.filter(d => !symptomDates.has(d));
+    if (symDates.length >= 3 && nonSymDates.length >= 3) {
+      const symFatAvg = symDates.reduce((s,d) => s+totalsFor(d).fat, 0) / symDates.length;
+      const nonSymFatAvg = nonSymDates.reduce((s,d) => s+totalsFor(d).fat, 0) / nonSymDates.length;
+      if (nonSymFatAvg > 0 && symFatAvg > nonSymFatAvg * 1.15) {
+        insights.push({ icon: '🔍', text: `Symptom days average ${Math.round(symFatAvg)}g fat vs ${Math.round(nonSymFatAvg)}g on other days — might be worth watching` });
+      }
+    } else if (symDates.length > 0) {
+      insights.push({ icon: '🔍', text: `${symDates.length} symptom day${symDates.length===1?'':'s'} logged so far — a few more will help spot patterns` });
+    }
+    return insights;
+  }
+
   function render() {
     if (!cfg) { renderSetupModal({}); return; }
     if (!state.loaded) { root.innerHTML = '<div class="mt-loading">loading log&hellip;</div>'; return; }
 
     const t = totalsFor(state.currentDate);
-    const tg = state.targets;
+    const presetKey = state.dayTypes[state.currentDate] || 'standard';
+    const tg = state.targetPresets[presetKey];
     const { label: dateLabel, isToday } = fmtDateLabel(state.currentDate);
     const dayEntriesAll = state.entries.filter(e => e.date === state.currentDate).sort((a,b) => (a.time||'').localeCompare(b.time||''));
     const dayEntries = dayEntriesAll.filter(e => e.kind !== 'symptom');
     const daySymptoms = dayEntriesAll.filter(e => e.kind === 'symptom');
     const mealGroups = {};
     dayEntries.forEach(e => { (mealGroups[e.meal] = mealGroups[e.meal] || []).push(e); });
-    const calOver = t.cal > tg.cal;
+    const calRange = rangeFor(tg.cal, 0.08);
+    const calOver = t.cal > calRange.hi;
+    const priority = priorityHint(t, tg, calRange);
 
     const allDates = Array.from(new Set(state.entries.map(e => e.date))).sort();
     const symptomDates = new Set(state.entries.filter(e => e.kind === 'symptom').map(e => e.date));
@@ -323,6 +416,7 @@
     const last7 = allDates.slice(-7);
     const avg = (key) => last7.length ? Math.round(last7.reduce((s,d)=>s+totalsFor(d)[key],0)/last7.length) : 0;
     const histDates = allDates.filter(d => d !== state.currentDate).sort().reverse().slice(0, 14);
+    const insights = computeInsights(last7, avg, allDates, symptomDates);
 
     root.innerHTML = `
       <p class="mt-eyebrow">🥗 Daily Intake Ledger &middot; dairy-free &middot; synced to github.com/${cfg.user}/${cfg.repo}
@@ -336,18 +430,27 @@
         <button id="mt-next" ${isToday ? 'disabled' : ''} aria-label="Next day">&rarr;</button>
       </div>
 
+      <div class="mt-preset-row">
+        ${Object.entries(state.targetPresets).map(([key,p]) => `
+          <button class="mt-preset-pill ${presetKey===key?'active':''}" data-preset="${key}">${escapeHtml(p.label||key)}</button>
+        `).join('')}
+      </div>
+
       <div class="mt-label">
         <div class="mt-label-head">Today's Intake</div>
-        <div class="mt-label-sub"><span>${dayEntries.length} item${dayEntries.length===1?'':'s'} logged${dayEntries.filter(e=>e.status==='pending'||e.status==='estimating').length ? ` &middot; ${dayEntries.filter(e=>e.status==='pending'||e.status==='estimating').length} awaiting estimate` : ''}</span><span>Target basis: 1 day</span></div>
+        <div class="mt-label-sub"><span>${dayEntries.length} item${dayEntries.length===1?'':'s'} logged${dayEntries.filter(e=>e.status==='pending'||e.status==='estimating').length ? ` &middot; ${dayEntries.filter(e=>e.status==='pending'||e.status==='estimating').length} awaiting estimate` : ''}</span><span>${escapeHtml(tg.label||'Standard')}</span></div>
         <div class="mt-cal-row">
           <span class="mt-row-label">Calories</span>
           <span class="mt-row-val" style="color:${calOver?'var(--over)':'var(--ink)'}">${t.cal} <span style="font-size:14px;font-weight:400;color:var(--muted)">/ ${tg.cal}</span></span>
         </div>
-        ${macroRow('Protein', '--protein', t.protein, tg.protein, 'g')}
-        ${macroRow('Fat', '--fat', t.fat, tg.fat, 'g')}
-        ${macroRow('Carbs', '--carb', t.carb, tg.carb, 'g')}
+        ${macroRow('Protein', '--protein', t.protein, tg.protein, 'g', { mode: 'min' })}
+        ${macroRow('Fat', '--fat', t.fat, tg.fat, 'g', { tolerance: 0.15 })}
+        ${macroRow('Carbs', '--carb', t.carb, tg.carb, 'g', { tolerance: 0.15 })}
         <div style="padding-top:10px; font-family:var(--font-mono); font-size:11px; color:${calOver ? 'var(--over)' : 'var(--muted)'}">
           ${calOver ? `${t.cal - tg.cal} kcal over target` : `${tg.cal - t.cal} kcal remaining`}
+        </div>
+        <div class="mt-priority" style="color:${priority.icon==='⚠️'?'var(--over)':priority.icon==='✅'?'var(--protein)':'var(--ink)'}">
+          <span>${priority.icon}</span><span>${priority.text}</span>
         </div>
       </div>
 
@@ -415,19 +518,25 @@
         <div class="mt-week-cell"><span class="mt-week-num" style="color:var(--carb)">${avg('carb')}g</span><span class="mt-week-lbl">carbs</span></div>
       </div>
 
+      <div class="mt-section-title">📈 Trends</div>
+      <div class="mt-trends">
+        ${insights.length ? insights.map(i => `<div class="mt-insight"><span class="em">${i.icon}</span><span>${i.text}</span></div>`).join('') : '<div class="mt-empty">Log a few more days to see trends here.</div>'}
+      </div>
+
       <div class="mt-section-title">🕐 History</div>
       <div id="mt-hist-list">
         ${histDates.length === 0 ? '<div class="mt-empty">No earlier days logged yet.</div>' :
           histDates.map(d => {
             const dt = totalsFor(d);
+            const dtg = targetForDate(d);
             const { label } = fmtDateLabel(d);
-            const cp = Math.min(pct(dt.cal, tg.cal), 100);
-            const pp = Math.min(pct(dt.protein, tg.protein), 100);
-            const fp = Math.min(pct(dt.fat, tg.fat), 100);
-            const cbp = Math.min(pct(dt.carb, tg.carb), 100);
+            const cp = Math.min(pct(dt.cal, dtg.cal), 100);
+            const pp = Math.min(pct(dt.protein, dtg.protein), 100);
+            const fp = Math.min(pct(dt.fat, dtg.fat), 100);
+            const cbp = Math.min(pct(dt.carb, dtg.carb), 100);
             return `
               <div class="mt-hist-item" data-date="${d}">
-                <div class="mt-hist-head"><span class="mt-hist-date">${label}${symptomDates.has(d) ? '<span class="mt-hist-symptom-dot" title="Symptom logged"></span>' : ''}</span><span class="mt-hist-cal" style="color:${dt.cal>tg.cal?'var(--over)':'var(--ink)'}">${dt.cal} kcal</span></div>
+                <div class="mt-hist-head"><span class="mt-hist-date">${label}${symptomDates.has(d) ? '<span class="mt-hist-symptom-dot" title="Symptom logged"></span>' : ''}</span><span class="mt-hist-cal" style="color:${dt.cal>dtg.cal*1.08?'var(--over)':'var(--ink)'}">${dt.cal} kcal</span></div>
                 <div class="mt-hist-bars">
                   <div><span style="width:${cp}%; background:var(--ink)"></span></div>
                   <div><span style="width:${pp}%; background:var(--protein)"></span></div>
@@ -447,6 +556,10 @@
     document.getElementById('mt-prev').onclick = () => { state.currentDate = shiftDate(state.currentDate, -1); render(); };
     const nextBtn = document.getElementById('mt-next');
     if (nextBtn) nextBtn.onclick = () => { state.currentDate = shiftDate(state.currentDate, 1); render(); };
+
+    root.querySelectorAll('.mt-preset-pill').forEach(btn => {
+      btn.onclick = async () => { state.dayTypes[state.currentDate] = btn.dataset.preset; await persist(); };
+    });
 
     document.getElementById('mt-add-btn').onclick = async () => {
       if (document.activeElement) document.activeElement.blur();
