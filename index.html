@@ -128,6 +128,13 @@
   .mt-insight { display: flex; align-items: flex-start; gap: 10px; padding: 13px 0; border-bottom: 1px solid var(--line); font-size: 12.5px; line-height: 1.5; }
   .mt-insight:last-child { border-bottom: none; }
   .mt-insight .em { flex-shrink: 0; font-size: 15px; width: 20px; text-align: center; }
+
+  .mt-finish { background: var(--panel); border: 1px solid var(--protein); border-radius: 10px; padding: 14px 16px; margin-bottom: 22px; }
+  .mt-finish-head { font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--protein); margin-bottom: 10px; }
+  .mt-finish-item { padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .mt-finish-item:last-child { border-bottom: none; }
+  .mt-finish-item .name { font-weight: 700; }
+  .mt-finish-item .macros { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -327,6 +334,31 @@
     return { icon: '✅', text: 'Protein target met, calories on track' };
   }
 
+  // Small, low-effort/high-protein foods for closing out a gap after dinner. Calorie-efficient first.
+  const PROTEIN_BOOSTERS = [
+    { name: 'Egg whites (3)', cal: 51, protein: 11, fat: 0, carb: 1 },
+    { name: 'Turkey breast slices (3 oz)', cal: 90, protein: 19, fat: 1, carb: 1 },
+    { name: 'Low-fat cottage cheese (1/2 cup)', cal: 90, protein: 12, fat: 2, carb: 5 },
+    { name: 'Nonfat Greek yogurt (170g)', cal: 100, protein: 18, fat: 0, carb: 6 },
+    { name: 'Canned tuna in water (1 can)', cal: 110, protein: 24, fat: 1, carb: 0 },
+    { name: 'Whey protein shake (1 scoop)', cal: 120, protein: 24, fat: 1, carb: 3 },
+    { name: 'Chicken breast (3 oz)', cal: 140, protein: 26, fat: 3, carb: 0 },
+  ];
+
+  function finishYourDay(t, tg) {
+    const proteinLeft = tg.protein - t.protein;
+    if (proteinLeft <= 0) return null;
+    const covering = PROTEIN_BOOSTERS.filter(b => b.protein >= proteinLeft).sort((a,b) => a.cal - b.cal);
+    const fallback = [...PROTEIN_BOOSTERS].sort((a,b) => (b.protein/b.cal) - (a.protein/a.cal));
+    const picks = (covering.length ? covering : fallback).slice(0, 2);
+    return picks.map(p => {
+      const newCal = t.cal + p.cal;
+      const delta = newCal - tg.cal;
+      const deltaText = delta > 0 ? `${delta} kcal over target` : `${-delta} kcal still under target`;
+      return { ...p, deltaText };
+    });
+  }
+
   function renderSetupModal(prefill, errMsg) {
     root.innerHTML = `
       <div class="mt-modal-wrap"><div class="mt-modal">
@@ -406,6 +438,8 @@
     const calRange = rangeFor(tg.cal, 0.08);
     const calOver = t.cal > calRange.hi;
     const priority = priorityHint(t, tg, calRange);
+    const dinnerLogged = dayEntries.some(e => e.meal === 'Dinner' && e.status !== 'estimating');
+    const finishers = (isToday && dinnerLogged) ? finishYourDay(t, tg) : null;
 
     const allDates = Array.from(new Set(state.entries.map(e => e.date))).sort();
     const symptomDates = new Set(state.entries.filter(e => e.kind === 'symptom').map(e => e.date));
@@ -453,6 +487,18 @@
           <span>${priority.icon}</span><span>${priority.text}</span>
         </div>
       </div>
+
+      ${finishers && finishers.length ? `
+        <div class="mt-finish">
+          <div class="mt-finish-head">🍽️ Finish your day</div>
+          ${finishers.map(f => `
+            <div class="mt-finish-item">
+              <div class="name">${escapeHtml(f.name)}</div>
+              <div class="macros">${f.cal} kcal &middot; P${f.protein} F${f.fat} C${f.carb} &middot; ${f.deltaText}</div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
 
       <div class="mt-section-title">📝 Log an Entry</div>
       <div class="mt-tabs">
