@@ -6,6 +6,7 @@
 <title>Macro Log</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="./finish-your-day.js"></script>
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" type="image/png" href="favicon.png" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
@@ -334,29 +335,10 @@
     return { icon: '✅', text: 'Protein target met, calories on track' };
   }
 
-  // Small, low-effort/high-protein foods for closing out a gap after dinner. Calorie-efficient first.
-  const PROTEIN_BOOSTERS = [
-    { name: 'Egg whites (3)', cal: 51, protein: 11, fat: 0, carb: 1 },
-    { name: 'Turkey breast slices (3 oz)', cal: 90, protein: 19, fat: 1, carb: 1 },
-    { name: 'Low-fat cottage cheese (1/2 cup)', cal: 90, protein: 12, fat: 2, carb: 5 },
-    { name: 'Nonfat Greek yogurt (170g)', cal: 100, protein: 18, fat: 0, carb: 6 },
-    { name: 'Canned tuna in water (1 can)', cal: 110, protein: 24, fat: 1, carb: 0 },
-    { name: 'Whey protein shake (1 scoop)', cal: 120, protein: 24, fat: 1, carb: 3 },
-    { name: 'Chicken breast (3 oz)', cal: 140, protein: 26, fat: 3, carb: 0 },
-  ];
-
+  // Small, low-effort/high-protein foods for closing out a gap after dinner.
+  // Logic lives in finish-your-day.js, shared with the hub — see that file to change the food list.
   function finishYourDay(t, tg) {
-    const proteinLeft = tg.protein - t.protein;
-    if (proteinLeft <= 0) return null;
-    const covering = PROTEIN_BOOSTERS.filter(b => b.protein >= proteinLeft).sort((a,b) => a.cal - b.cal);
-    const fallback = [...PROTEIN_BOOSTERS].sort((a,b) => (b.protein/b.cal) - (a.protein/a.cal));
-    const picks = (covering.length ? covering : fallback).slice(0, 2);
-    return picks.map(p => {
-      const newCal = t.cal + p.cal;
-      const delta = newCal - tg.cal;
-      const deltaText = delta > 0 ? `${delta} kcal over target` : `${-delta} kcal still under target`;
-      return { ...p, deltaText };
-    });
+    return window.FinishYourDay ? window.FinishYourDay.compute(t, tg, 2) : null;
   }
 
   function renderSetupModal(prefill, errMsg) {
