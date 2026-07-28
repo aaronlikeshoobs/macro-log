@@ -157,18 +157,18 @@
     };
   }
   const SEED_ENTRIES = [];
-  const LS_CFG = 'mt-github-cfg';
+  const LS_PASSWORD = 'app-password';
 
   let autoFocusPending = true;
-  let cfg = null; // { user, repo, token }
   let sha = null; // current data.json sha, for updates
+  let pendingErrMsg = null;
   const LS_QUEUE = 'mt-offline-queue';
   let state = {
     entries: SEED_ENTRIES,
     targetPresets: deriveDefaultPresets(DEFAULT_TARGETS),
     dayTypes: {},
     currentDate: todayStr(), loaded: false, syncErr: null, syncing: false, entryTab: 'meal', severity: 'Mild',
-    vitalsWeight: null,
+    vitalsWeight: null, needsPassword: false,
   };
 
   function loadQueue() { try { return JSON.parse(localStorage.getItem(LS_QUEUE) || '[]'); } catch(e) { return []; } }
@@ -179,30 +179,33 @@
     return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
   }
 
-  function loadCfg() {
-    try { const raw = localStorage.getItem(LS_CFG); return raw ? JSON.parse(raw) : null; }
-    catch (e) { return null; }
-  }
-  function saveCfg(c) { localStorage.setItem(LS_CFG, JSON.stringify(c)); }
+  // ---- Storage, proxied through repo-proxy Worker — no GitHub token in this file, ever ----
+  const REPO_WORKER_URL = 'https://repo-proxy.restless-union-743f.workers.dev';
 
   async function ghGet() {
-    const res = await fetch(`https://api.github.com/repos/${cfg.user}/${cfg.repo}/contents/data.json`, {
-      headers: { Authorization: `Bearer ${cfg.token}`, Accept: 'application/vnd.github+json' }
-    });
-    if (!res.ok) throw new Error('GitHub read failed: ' + res.status);
+    const res = await fetch(`${REPO_WORKER_URL}/?repo=macro-log`);
+    if (!res.ok) throw new Error('Read failed: ' + res.status);
     const json = await res.json();
     sha = json.sha;
-    const decoded = decodeURIComponent(escape(atob(json.content.replace(/\n/g, ''))));
-    return decoded ? JSON.parse(decoded) : {};
+    return json.content || {};
   }
 
   async function ghPut(dataObj, retried) {
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(dataObj, null, 2))));
-    const res = await fetch(`https://api.github.com/repos/${cfg.user}/${cfg.repo}/contents/data.json`, {
+    const pw = localStorage.getItem(LS_PASSWORD);
+    if (!pw) {
+      state.needsPassword = true;
+      throw new Error('App password needed to save');
+    }
+    const res = await fetch(`${REPO_WORKER_URL}/?repo=macro-log`, {
       method: 'PUT',
-      headers: { Authorization: `Bearer ${cfg.token}`, Accept: 'application/vnd.github+json' },
-      body: JSON.stringify({ message: 'log update ' + new Date().toISOString(), content, sha })
+      headers: { 'Content-Type': 'application/json', 'X-App-Password': pw },
+      body: JSON.stringify({ content: dataObj, sha }),
     });
+    if (res.status === 401) {
+      localStorage.removeItem(LS_PASSWORD);
+      state.needsPassword = true;
+      throw new Error('Wrong app password');
+    }
     if (res.status === 409 && !retried) {
       // our sha is stale (file changed elsewhere) — refetch latest, merge our entries in, retry once
       const latest = await ghGet(); // also refreshes module-level `sha`
@@ -220,9 +223,9 @@
       state.dayTypes = merged.dayTypes;
       return ghPut(merged, true);
     }
-    if (!res.ok) throw new Error('GitHub write failed: ' + res.status);
+    if (!res.ok) throw new Error('Save failed: ' + res.status);
     const json = await res.json();
-    sha = json.content.sha;
+    sha = json.sha;
   }
 
   const WORKER_URL = 'https://macro-log-proxy.restless-union-743f.workers.dev/';
@@ -279,7 +282,7 @@
       state.syncErr = null;
       saveQueue([]); // fully synced, clear any queued backup
     } catch (e) {
-      state.syncErr = e.message + ' \u2014 saved locally, will retry on next open';
+      state.syncErr = state.needsPassword ? null : e.message + ' \u2014 saved locally, will retry on next open';
     }
     state.syncing = false; render();
   }
@@ -341,32 +344,28 @@
     return window.FinishYourDay ? window.FinishYourDay.compute(t, tg, 2) : null;
   }
 
-  function renderSetupModal(prefill, errMsg) {
-    root.innerHTML = `
+  function passwordModalHtml(errMsg) {
+    return `
       <div class="mt-modal-wrap"><div class="mt-modal">
-        <h2>Connect GitHub</h2>
-        <p>Enter your repo details once — stored only in this browser's local storage, never sent anywhere but GitHub's API.</p>
-        <label>GitHub username</label><input id="cfg-user" value="${prefill.user||'aaronlikeshoobs'}" />
-        <label>Repo name</label><input id="cfg-repo" value="${prefill.repo||'macro-log'}" />
-        <label>Personal access token</label><input id="cfg-token" type="password" value="${prefill.token||''}" placeholder="github_pat_..." />
+        <h2>App password needed</h2>
+        <p>Enter the password you set for this app to save. Reading your log doesn't need it — only saving changes does.</p>
+        <label>Password</label><input id="pw-input" type="password" placeholder="" />
         ${errMsg ? `<div class="mt-modal-err">${escapeHtml(errMsg)}</div>` : ''}
-        <button class="mt-add-btn" style="margin-top:14px" id="cfg-save">Connect &amp; load log</button>
+        <button class="mt-add-btn" style="margin-top:14px" id="pw-save">Save</button>
       </div></div>`;
-    document.getElementById('cfg-save').onclick = async () => {
-      const user = document.getElementById('cfg-user').value.trim();
-      const repo = document.getElementById('cfg-repo').value.trim();
-      const token = document.getElementById('cfg-token').value.trim();
-      if (!user || !repo || !token) return;
-      cfg = { user, repo, token };
-      root.innerHTML = '<div class="mt-loading">connecting&hellip;</div>';
-      try {
-        await ghGet();
-        saveCfg(cfg);
-        loadData();
-      } catch (e) {
-        renderSetupModal(cfg, 'Could not connect: ' + e.message);
-      }
+  }
+  function attachPasswordModal() {
+    const btn = document.getElementById('pw-save');
+    if (!btn) return;
+    const submit = async () => {
+      const pw = document.getElementById('pw-input').value.trim();
+      if (!pw) return;
+      localStorage.setItem(LS_PASSWORD, pw);
+      state.needsPassword = false;
+      await persist();
     };
+    btn.onclick = submit;
+    document.getElementById('pw-input').onkeydown = (e) => { if (e.key === 'Enter') submit(); };
   }
 
   function computeInsights(last7, avg, allDates, symptomDates) {
@@ -405,7 +404,6 @@
   }
 
   function render() {
-    if (!cfg) { renderSetupModal({}); return; }
     if (!state.loaded) { root.innerHTML = '<div class="mt-loading">loading log&hellip;</div>'; return; }
 
     const t = totalsFor(state.currentDate);
@@ -434,8 +432,8 @@
     const histDates = allDates.filter(d => d !== state.currentDate).sort().reverse().slice(0, 14);
     const insights = computeInsights(last7, avg, allDates, symptomDates);
 
-    root.innerHTML = `
-      <p class="mt-eyebrow">🥗 Daily Intake Ledger &middot; dairy-free &middot; synced to github.com/${cfg.user}/${cfg.repo}
+    root.innerHTML = (state.needsPassword ? passwordModalHtml() : '') + `
+      <p class="mt-eyebrow">🥗 Daily Intake Ledger &middot; dairy-free &middot; synced to github.com/aaronlikeshoobs/macro-log
         <button id="mt-sync-btn" style="float:right; background:none; border:1px solid var(--muted); color:var(--muted); font-family:var(--font-mono); font-size:10px; padding:9px 12px; min-height:38px; cursor:pointer; text-transform:uppercase; letter-spacing:0.05em; border-radius:6px;">&#8635; Refresh</button>
       </p>
       <h1 class="mt-title">Macro Log</h1>
@@ -589,6 +587,8 @@
       btn.onclick = async () => { state.dayTypes[state.currentDate] = btn.dataset.preset; await persist(); };
     });
 
+    attachPasswordModal();
+
     document.getElementById('mt-add-btn').onclick = async () => {
       if (document.activeElement) document.activeElement.blur();
       const now = new Date();
@@ -683,8 +683,7 @@
     });
   }
 
-  cfg = loadCfg();
-  if (cfg) { loadData(); } else { render(); }
+  loadData();
 })();
 </script>
 </body>
