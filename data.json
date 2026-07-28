@@ -236,6 +236,18 @@
       "carb": 2,
       "status": "estimated",
       "time": "07:26"
+    },
+    {
+      "id": "e-1785255461252-gu2g2",
+      "date": "2026-07-28",
+      "meal": "Breakfast",
+      "name": "2 scrambled eggs, Dave’s everything protein bagel and Philadelphia plant based cream cheese",
+      "cal": null,
+      "protein": null,
+      "fat": null,
+      "carb": null,
+      "status": "estimating",
+      "time": "09:17"
     }
   ],
   "targetPresets": {
