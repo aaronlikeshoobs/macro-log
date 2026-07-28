@@ -223,13 +223,16 @@
       throw new Error('Wrong app password');
     }
     if (res.status === 409 && !retried) {
-      // our sha is stale (file changed elsewhere) — refetch latest, merge our entries in, retry once
+      // our sha is stale (file changed elsewhere) — refetch latest, merge by id (local wins for
+      // anything we have locally, including edits to existing entries — not just brand new ones),
+      // keep anything that only exists remotely (added by another client since our last sync), retry once
       const latest = await ghGet(); // also refreshes module-level `sha`
       const remoteEntries = latest.entries || [];
-      const remoteIds = new Set(remoteEntries.map(e => e.id));
-      const oursOnly = (dataObj.entries || []).filter(e => !remoteIds.has(e.id));
+      const localEntries = dataObj.entries || [];
+      const localIds = new Set(localEntries.map(e => e.id));
+      const remoteOnly = remoteEntries.filter(e => !localIds.has(e.id));
       const merged = {
-        entries: [...remoteEntries, ...oursOnly],
+        entries: [...remoteOnly, ...localEntries],
         targetPresets: dataObj.targetPresets || latest.targetPresets,
         dayTypes: { ...(latest.dayTypes || {}), ...(dataObj.dayTypes || {}) },
         targets: dataObj.targets || latest.targets,
