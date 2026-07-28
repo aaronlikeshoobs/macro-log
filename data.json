@@ -238,15 +238,39 @@
       "time": "07:26"
     },
     {
-      "id": "e-1785255461252-gu2g2",
+      "id": "e-1785255464339-0-p0d",
       "date": "2026-07-28",
       "meal": "Breakfast",
-      "name": "2 scrambled eggs, Dave’s everything protein bagel and Philadelphia plant based cream cheese",
-      "cal": null,
-      "protein": null,
-      "fat": null,
-      "carb": null,
-      "status": "estimating",
+      "name": "Scrambled eggs (2)",
+      "cal": 180,
+      "protein": 13,
+      "fat": 14,
+      "carb": 1,
+      "status": "estimated",
+      "time": "09:17"
+    },
+    {
+      "id": "e-1785255464339-1-cpv",
+      "date": "2026-07-28",
+      "meal": "Breakfast",
+      "name": "Dave's Killer Bread Everything Protein Bagel",
+      "cal": 260,
+      "protein": 13,
+      "fat": 2,
+      "carb": 47,
+      "status": "estimated",
+      "time": "09:17"
+    },
+    {
+      "id": "e-1785255464339-2-fyx",
+      "date": "2026-07-28",
+      "meal": "Breakfast",
+      "name": "Philadelphia Plant Based Cream Cheese",
+      "cal": 100,
+      "protein": 4,
+      "fat": 9,
+      "carb": 2,
+      "status": "estimated",
       "time": "09:17"
     }
   ],
