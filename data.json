@@ -454,15 +454,27 @@
       "time": "09:15"
     },
     {
-      "id": "e-1785361766872-61tp8",
+      "id": "e-1785361769119-0-xlo",
       "date": "2026-07-29",
       "meal": "Lunch",
-      "name": "Homemade dairy free and gluten free pizza. 1 slice of bbq chicken pizza and 1 slice of meat lovers pizza.",
-      "cal": null,
-      "protein": null,
-      "fat": null,
-      "carb": null,
-      "status": "estimating",
+      "name": "BBQ Chicken Pizza (1 slice)",
+      "cal": 280,
+      "protein": 18,
+      "fat": 12,
+      "carb": 28,
+      "status": "estimated",
+      "time": "14:49"
+    },
+    {
+      "id": "e-1785361769119-1-epi",
+      "date": "2026-07-29",
+      "meal": "Lunch",
+      "name": "Meat Lovers Pizza (1 slice)",
+      "cal": 320,
+      "protein": 20,
+      "fat": 15,
+      "carb": 26,
+      "status": "estimated",
       "time": "14:49"
     }
   ],
