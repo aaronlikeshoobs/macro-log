@@ -30,7 +30,7 @@
     --font-mono: 'IBM Plex Mono', 'SF Mono', ui-monospace, Menlo, monospace;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; padding: 0; background: var(--bg); overscroll-behavior-y: none; }
+  html, body { margin: 0; padding: 0; background: var(--bg); overscroll-behavior-y: none; overflow-anchor: none; }
   body { font-family: var(--font-body); color: var(--ink); touch-action: manipulation; }
   #mt-root { padding: 22px 18px 110px; padding-top: max(22px, env(safe-area-inset-top)); max-width: 640px; margin: 0 auto; min-height: 100vh; }
   button { touch-action: manipulation; }
@@ -286,6 +286,7 @@
     }
     state.loaded = true;
     render();
+    window.scrollTo(0, 0); // real content just rendered for the first time — reset scroll now, not before
     if (queue.length && !state.syncErr) { await persist(); } // flush queue now that we're connected
     // best-effort, non-blocking: pull weight history from Vitals Log for the trends section
     fetch('https://raw.githubusercontent.com/aaronlikeshoobs/vitals-log/main/data.json')
