@@ -476,18 +476,6 @@
       "carb": 3,
       "status": "estimated",
       "time": "09:15"
-    },
-    {
-      "id": "e-1785361690355-5-ekh",
-      "date": "2026-07-29",
-      "meal": "Lunch",
-      "name": "Chicken",
-      "cal": 165,
-      "protein": 31,
-      "fat": 4,
-      "carb": 0,
-      "status": "estimated",
-      "time": "14:48"
     }
   ],
   "targetPresets": {
