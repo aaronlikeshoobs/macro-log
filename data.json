@@ -308,6 +308,18 @@
       "carb": 24,
       "status": "estimated",
       "time": "14:06"
+    },
+    {
+      "id": "e-1785286844310-8l56p",
+      "date": "2026-07-28",
+      "meal": "Dinner",
+      "name": "Safe Catch tuna in water (can)",
+      "cal": 100,
+      "protein": 22,
+      "fat": 1,
+      "carb": 0,
+      "status": "estimated",
+      "time": "18:00"
     }
   ],
   "targetPresets": {
