@@ -1,18 +1,6 @@
 {
   "entries": [
     {
-      "id": "e-1785361690355-3-f4c",
-      "date": "2026-07-29",
-      "meal": "Lunch",
-      "name": "Sausage",
-      "cal": 180,
-      "protein": 10,
-      "fat": 15,
-      "carb": 1,
-      "status": "estimated",
-      "time": "14:48"
-    },
-    {
       "id": "seed-1",
       "date": "2026-07-27",
       "meal": "Breakfast",
