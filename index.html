@@ -822,7 +822,7 @@
     const activeInput = nameInput || symptomInput;
     if (activeInput) {
       activeInput.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') document.getElementById('mt-add-btn').click(); });
-      if (autoFocusPending) { activeInput.focus(); autoFocusPending = false; }
+      if (autoFocusPending) { activeInput.focus({ preventScroll: true }); autoFocusPending = false; }
     }
     if (nameInput) {
       // default meal to whatever fits the time of day
