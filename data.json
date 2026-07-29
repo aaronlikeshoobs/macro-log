@@ -320,6 +320,18 @@
       "carb": 0,
       "status": "estimated",
       "time": "18:00"
+    },
+    {
+      "id": "e-1785286862060-ut5ea",
+      "date": "2026-07-28",
+      "meal": "Snack",
+      "name": "4 slices of salami",
+      "cal": null,
+      "protein": null,
+      "fat": null,
+      "carb": null,
+      "status": "estimating",
+      "time": "18:01"
     }
   ],
   "targetPresets": {
