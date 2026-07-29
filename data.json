@@ -1,18 +1,6 @@
 {
   "entries": [
     {
-      "id": "e-1785361690355-1-dh1",
-      "date": "2026-07-29",
-      "meal": "Lunch",
-      "name": "Pizza cheese",
-      "cal": 280,
-      "protein": 18,
-      "fat": 22,
-      "carb": 3,
-      "status": "estimated",
-      "time": "14:48"
-    },
-    {
       "id": "e-1785361690355-2-3ts",
       "date": "2026-07-29",
       "meal": "Lunch",
@@ -21,6 +9,18 @@
       "protein": 12,
       "fat": 18,
       "carb": 1,
+      "status": "estimated",
+      "time": "14:48"
+    },
+    {
+      "id": "e-1785361690355-1-dh1",
+      "date": "2026-07-29",
+      "meal": "Lunch",
+      "name": "Pizza cheese",
+      "cal": 280,
+      "protein": 18,
+      "fat": 22,
+      "carb": 3,
       "status": "estimated",
       "time": "14:48"
     },
