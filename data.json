@@ -392,6 +392,18 @@
       "carb": 46,
       "status": "estimated",
       "time": "18:57"
+    },
+    {
+      "id": "e-1785299521628-iu578",
+      "date": "2026-07-28",
+      "meal": "Snack",
+      "name": "8 mixed nuts and a gluten free bros protein bar",
+      "cal": null,
+      "protein": null,
+      "fat": null,
+      "carb": null,
+      "status": "estimating",
+      "time": "21:32"
     }
   ],
   "targetPresets": {
