@@ -418,15 +418,39 @@
       "time": "21:32"
     },
     {
-      "id": "e-1785341747747-hmybl",
+      "id": "e-1785341750652-0-c95",
       "date": "2026-07-29",
       "meal": "Breakfast",
-      "name": "1 piece Dave’s bread, 2 scrambled eggs, 1/4 avocado",
-      "cal": null,
-      "protein": null,
-      "fat": null,
-      "carb": null,
-      "status": "estimating",
+      "name": "Dave's Killer Bread",
+      "cal": 100,
+      "protein": 5,
+      "fat": 2,
+      "carb": 16,
+      "status": "estimated",
+      "time": "09:15"
+    },
+    {
+      "id": "e-1785341750652-1-qky",
+      "date": "2026-07-29",
+      "meal": "Breakfast",
+      "name": "Scrambled eggs (2)",
+      "cal": 180,
+      "protein": 13,
+      "fat": 14,
+      "carb": 1,
+      "status": "estimated",
+      "time": "09:15"
+    },
+    {
+      "id": "e-1785341750652-2-3wn",
+      "date": "2026-07-29",
+      "meal": "Breakfast",
+      "name": "Avocado (1/4)",
+      "cal": 60,
+      "protein": 1,
+      "fat": 5,
+      "carb": 3,
+      "status": "estimated",
       "time": "09:15"
     }
   ],
