@@ -1,6 +1,42 @@
 {
   "entries": [
     {
+      "id": "e-1785361690355-4-u4e",
+      "date": "2026-07-29",
+      "meal": "Lunch",
+      "name": "BBQ sauce",
+      "cal": 60,
+      "protein": 0,
+      "fat": 0,
+      "carb": 15,
+      "status": "estimated",
+      "time": "14:48"
+    },
+    {
+      "id": "e-1785361690355-1-dh1",
+      "date": "2026-07-29",
+      "meal": "Lunch",
+      "name": "Pizza cheese",
+      "cal": 280,
+      "protein": 18,
+      "fat": 22,
+      "carb": 3,
+      "status": "estimated",
+      "time": "14:48"
+    },
+    {
+      "id": "e-1785361690355-2-3ts",
+      "date": "2026-07-29",
+      "meal": "Lunch",
+      "name": "Pepperoni",
+      "cal": 210,
+      "protein": 12,
+      "fat": 18,
+      "carb": 1,
+      "status": "estimated",
+      "time": "14:48"
+    },
+    {
       "id": "seed-1",
       "date": "2026-07-27",
       "meal": "Breakfast",
@@ -454,14 +490,14 @@
       "time": "09:15"
     },
     {
-      "id": "e-1785361690355-4-u4e",
+      "id": "e-1785361690355-3-f4c",
       "date": "2026-07-29",
       "meal": "Lunch",
-      "name": "BBQ sauce",
-      "cal": 60,
-      "protein": 0,
-      "fat": 0,
-      "carb": 15,
+      "name": "Sausage",
+      "cal": 180,
+      "protein": 10,
+      "fat": 15,
+      "carb": 1,
       "status": "estimated",
       "time": "14:48"
     },
