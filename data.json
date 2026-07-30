@@ -572,6 +572,18 @@
       "carb": 1,
       "status": "estimated",
       "time": "09:28"
+    },
+    {
+      "id": "e-1785428958371-2zluo",
+      "date": "2026-07-30",
+      "meal": "Breakfast",
+      "name": "Dave’s epic everything bagel and Philadelphia plant based cream cheese",
+      "cal": null,
+      "protein": null,
+      "fat": null,
+      "carb": null,
+      "status": "estimating",
+      "time": "09:29"
     }
   ],
   "targetPresets": {
