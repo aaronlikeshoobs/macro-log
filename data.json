@@ -476,6 +476,18 @@
       "carb": 26,
       "status": "estimated",
       "time": "14:49"
+    },
+    {
+      "id": "e-1785421829371-3bc31",
+      "date": "2026-07-29",
+      "meal": "Dinner",
+      "name": "Homemade grilled chicken sandwich with bbq sauce, roasted carrots and green beans",
+      "cal": null,
+      "protein": null,
+      "fat": null,
+      "carb": null,
+      "status": "estimating",
+      "time": "07:30"
     }
   ],
   "targetPresets": {
