@@ -598,15 +598,39 @@
       "time": "09:29"
     },
     {
-      "id": "e-1785444789045-wrulk",
+      "id": "e-1785444792450-0-wt7",
       "date": "2026-07-30",
       "meal": "Lunch",
-      "name": "Safe catch can of tuna in water with 1 tablespoon of avocado oil Mayo and 2 x Dave’s bread slices",
-      "cal": null,
-      "protein": null,
-      "fat": null,
-      "carb": null,
-      "status": "estimating",
+      "name": "Safe Catch tuna in water",
+      "cal": 60,
+      "protein": 13,
+      "fat": 0,
+      "carb": 0,
+      "status": "estimated",
+      "time": "13:53"
+    },
+    {
+      "id": "e-1785444792450-1-9yi",
+      "date": "2026-07-30",
+      "meal": "Lunch",
+      "name": "Avocado oil mayo",
+      "cal": 90,
+      "protein": 0,
+      "fat": 10,
+      "carb": 0,
+      "status": "estimated",
+      "time": "13:53"
+    },
+    {
+      "id": "e-1785444792450-2-zyo",
+      "date": "2026-07-30",
+      "meal": "Lunch",
+      "name": "Dave's Killer Bread",
+      "cal": 160,
+      "protein": 6,
+      "fat": 2,
+      "carb": 30,
+      "status": "estimated",
       "time": "13:53"
     }
   ],
