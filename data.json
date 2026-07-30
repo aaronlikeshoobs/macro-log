@@ -550,15 +550,15 @@
       "time": "07:30"
     },
     {
-      "id": "e-1785421859259-be7v4",
+      "id": "e-1785421861824-0-e20",
       "date": "2026-07-29",
       "meal": "Snack",
       "name": "Protein bar",
-      "cal": null,
-      "protein": null,
-      "fat": null,
-      "carb": null,
-      "status": "estimating",
+      "cal": 200,
+      "protein": 20,
+      "fat": 7,
+      "carb": 12,
+      "status": "estimated",
       "time": "07:30"
     }
   ],
