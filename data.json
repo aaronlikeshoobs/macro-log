@@ -538,15 +538,15 @@
       "time": "07:30"
     },
     {
-      "id": "e-1785421845486-flk48",
+      "id": "e-1785421847819-0-v7n",
       "date": "2026-07-29",
       "meal": "Snack",
-      "name": "3 beers",
-      "cal": null,
-      "protein": null,
-      "fat": null,
-      "carb": null,
-      "status": "estimating",
+      "name": "beer",
+      "cal": 465,
+      "protein": 3,
+      "fat": 0,
+      "carb": 12,
+      "status": "estimated",
       "time": "07:30"
     }
   ],
