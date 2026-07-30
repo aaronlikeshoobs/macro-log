@@ -560,6 +560,18 @@
       "carb": 12,
       "status": "estimated",
       "time": "07:30"
+    },
+    {
+      "id": "e-1785428917979-bfjwi",
+      "date": "2026-07-30",
+      "meal": "Breakfast",
+      "name": "Scrambled eggs (2)",
+      "cal": 180,
+      "protein": 13,
+      "fat": 14,
+      "carb": 1,
+      "status": "estimated",
+      "time": "09:28"
     }
   ],
   "targetPresets": {
