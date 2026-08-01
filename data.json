@@ -680,6 +680,18 @@
       "carb": 2,
       "status": "estimated",
       "time": "14:09"
+    },
+    {
+      "id": "e-1785618596569-kuell",
+      "date": "2026-08-01",
+      "meal": "Lunch",
+      "name": "Safe Catch tuna in water",
+      "cal": 60,
+      "protein": 13,
+      "fat": 0,
+      "carb": 0,
+      "status": "estimated",
+      "time": "14:09"
     }
   ],
   "targetPresets": {
