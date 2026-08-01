@@ -692,6 +692,18 @@
       "carb": 0,
       "status": "estimated",
       "time": "14:09"
+    },
+    {
+      "id": "e-1785618602104-9a04a",
+      "date": "2026-08-01",
+      "meal": "Lunch",
+      "name": "Avocado oil mayo",
+      "cal": 90,
+      "protein": 0,
+      "fat": 10,
+      "carb": 0,
+      "status": "estimated",
+      "time": "14:10"
     }
   ],
   "targetPresets": {
