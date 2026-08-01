@@ -139,6 +139,10 @@
   .mt-preset-row { display: flex; gap: 5px; margin-bottom: 14px; flex-wrap: nowrap; }
   .mt-preset-pill { flex: 1 1 0; min-width: 0; background: var(--panel); border: 1px solid var(--line); color: var(--muted); font-family: var(--font-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.02em; padding: 9px 4px; border-radius: 14px; cursor: pointer; min-height: 38px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .mt-preset-pill.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+  .mt-skip-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: -4px 0 12px; }
+  .mt-skip-label { font-family: var(--font-mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; width: 100%; margin-bottom: 2px; }
+  .mt-skip-btn { background: transparent; border: 1px dashed var(--line); color: var(--muted); font-family: var(--font-mono); font-size: 11px; padding: 8px 12px; border-radius: 16px; cursor: pointer; min-height: 38px; }
   .mt-priority { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11.5px; padding-top: 12px; border-top: 1px solid var(--line); margin-top: 4px; }
 
   .mt-trends { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 4px 16px; margin-bottom: 22px; }
@@ -352,10 +356,31 @@
   }
 
   // Most-recently-logged unique foods, newest first — no manual curation, just your own history.
+  function isDayTrustworthy(dateStr) {
+    const dayEntries = state.entries.filter(e => e.date === dateStr && e.kind !== 'symptom');
+    const covered = new Set(dayEntries.map(e => e.meal));
+    return ['Breakfast', 'Lunch', 'Dinner'].every(m => covered.has(m));
+  }
+
+  async function logSkip(meal) {
+    const now = new Date();
+    const timeStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+    const entry = {
+      id: 'e-' + Date.now() + '-' + Math.random().toString(36).slice(2,7),
+      date: state.currentDate, meal, name: 'Skipped', kind: 'skip',
+      cal: 0, protein: 0, fat: 0, carb: 0,
+      status: 'estimated', time: timeStr,
+    };
+    state.entries.push(entry);
+    const q = loadQueue(); q.push(entry); saveQueue(q);
+    render();
+    await persist();
+  }
+
   function getRecentFoods(limit) {
     const seen = new Map();
     const mealEntries = state.entries
-      .filter(e => e.kind !== 'symptom' && e.status === 'estimated' && e.name)
+      .filter(e => e.kind !== 'symptom' && e.kind !== 'skip' && e.status === 'estimated' && e.name)
       .slice()
       .sort((a, b) => (b.date + (b.time || '')).localeCompare(a.date + (a.time || '')));
     for (const e of mealEntries) {
@@ -405,6 +430,15 @@
           <div class="mt-edit-actions">
             <button class="mt-edit-save" data-id="${e.id}">Save</button>
             <button class="mt-edit-cancel" data-id="${e.id}">Cancel</button>
+          </div>
+        </div>`;
+    }
+    if (e.kind === 'skip') {
+      return `
+        <div class="mt-log-item">
+          <div style="color:var(--muted); font-style:italic;">Skipped ${escapeHtml(e.meal)}</div>
+          <div style="display:flex; align-items:center;">
+            <button class="mt-del" data-id="${e.id}" aria-label="Undo skip">&times;</button>
           </div>
         </div>`;
     }
@@ -532,6 +566,8 @@
     const priority = priorityHint(t, tg, calRange);
     const dinnerLogged = dayEntries.some(e => e.meal === 'Dinner' && e.status !== 'estimating');
     const finishers = (isToday && dinnerLogged) ? finishYourDay(t, tg) : null;
+    const coveredMeals = new Set(dayEntries.map(e => e.meal));
+    const skippableMeals = ['Breakfast', 'Lunch', 'Dinner'].filter(m => !coveredMeals.has(m));
 
     const allDates = Array.from(new Set(state.entries.map(e => e.date))).sort();
     const symptomDates = new Set(state.entries.filter(e => e.kind === 'symptom').map(e => e.date));
@@ -539,7 +575,12 @@
     let streak = 0;
     { let d = todayStr(); if (!dateSet.has(d)) d = shiftDate(d, -1);
       while (dateSet.has(d)) { streak++; d = shiftDate(d, -1); } }
-    const last7 = allDates.slice(-7);
+    // A day only counts toward averages if every main meal is accounted for — either
+    // real food, or an explicit "Skipped X" marker. A meal that's just silently missing
+    // (forgot to log, not actually skipped) makes that day's total untrustworthy, so we
+    // leave it out of the average rather than let a forgotten dinner drag numbers down.
+    const trustworthyDates = allDates.filter(isDayTrustworthy);
+    const last7 = trustworthyDates.slice(-7);
     const avg = (key) => last7.length ? Math.round(last7.reduce((s,d)=>s+totalsFor(d)[key],0)/last7.length) : 0;
     const histDates = allDates.filter(d => d !== state.currentDate).sort().reverse().slice(0, 14);
     const insights = computeInsights(last7, avg, allDates, symptomDates);
@@ -611,6 +652,12 @@
         <button class="mt-tab ${state.entryTab==='meal' ? 'active' : ''}" data-tab="meal">🍴 Meal</button>
         <button class="mt-tab ${state.entryTab==='symptom' ? 'symptom-active' : ''}" data-tab="symptom">⚠️ Upset stomach / BM</button>
       </div>
+      ${state.entryTab === 'meal' && skippableMeals.length ? `
+        <div class="mt-skip-row">
+          <span class="mt-skip-label">Didn't eat one of these?</span>
+          ${skippableMeals.map(m => `<button class="mt-skip-btn" data-skip-meal="${m}">Skipped ${m}</button>`).join('')}
+        </div>
+      ` : ''}
       <div class="mt-form">
         ${state.entryTab === 'meal' ? `
           <div class="mt-form-row">
@@ -703,6 +750,10 @@
 
     root.querySelectorAll('.mt-preset-pill').forEach(btn => {
       btn.onclick = async () => { state.dayTypes[state.currentDate] = btn.dataset.preset; await persist(); };
+    });
+
+    root.querySelectorAll('.mt-skip-btn').forEach(btn => {
+      btn.onclick = () => logSkip(btn.dataset.skipMeal);
     });
 
     root.querySelectorAll('.mt-recent-chip').forEach(chip => {
