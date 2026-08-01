@@ -634,15 +634,51 @@
       "time": "13:53"
     },
     {
-      "id": "e-1785618585336-z2cxm",
+      "id": "e-1785618588616-0-sbk",
       "date": "2026-08-01",
       "meal": "Breakfast",
-      "name": "Scrambled eggs, 3 x whole food breakfast pork sausage, gluten free odd bagel with Philly plant cream cheese",
-      "cal": null,
-      "protein": null,
-      "fat": null,
-      "carb": null,
-      "status": "estimating",
+      "name": "Scrambled eggs (2 large)",
+      "cal": 180,
+      "protein": 13,
+      "fat": 14,
+      "carb": 1,
+      "status": "estimated",
+      "time": "14:09"
+    },
+    {
+      "id": "e-1785618588616-1-ufx",
+      "date": "2026-08-01",
+      "meal": "Breakfast",
+      "name": "Pork sausage links (3)",
+      "cal": 330,
+      "protein": 21,
+      "fat": 27,
+      "carb": 0,
+      "status": "estimated",
+      "time": "14:09"
+    },
+    {
+      "id": "e-1785618588616-2-qit",
+      "date": "2026-08-01",
+      "meal": "Breakfast",
+      "name": "Gluten free bagel",
+      "cal": 210,
+      "protein": 7,
+      "fat": 2,
+      "carb": 41,
+      "status": "estimated",
+      "time": "14:09"
+    },
+    {
+      "id": "e-1785618588616-3-n1k",
+      "date": "2026-08-01",
+      "meal": "Breakfast",
+      "name": "Philly plant cream cheese (2 tbsp)",
+      "cal": 100,
+      "protein": 3,
+      "fat": 9,
+      "carb": 2,
+      "status": "estimated",
       "time": "14:09"
     }
   ],
