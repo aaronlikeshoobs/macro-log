@@ -632,6 +632,18 @@
       "carb": 30,
       "status": "estimated",
       "time": "13:53"
+    },
+    {
+      "id": "e-1785618585336-z2cxm",
+      "date": "2026-08-01",
+      "meal": "Breakfast",
+      "name": "Scrambled eggs, 3 x whole food breakfast pork sausage, gluten free odd bagel with Philly plant cream cheese",
+      "cal": null,
+      "protein": null,
+      "fat": null,
+      "carb": null,
+      "status": "estimating",
+      "time": "14:09"
     }
   ],
   "targetPresets": {
