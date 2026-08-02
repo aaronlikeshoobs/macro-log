@@ -730,15 +730,15 @@
       "time": "14:10"
     },
     {
-      "id": "e-1785630328295-t1lyi",
+      "id": "e-1785630330581-0-rof",
       "date": "2026-08-01",
       "meal": "Snack",
-      "name": "Cliff bar peanut butter flavor",
-      "cal": null,
-      "protein": null,
-      "fat": null,
-      "carb": null,
-      "status": "estimating",
+      "name": "Clif Bar Peanut Butter",
+      "cal": 250,
+      "protein": 10,
+      "fat": 9,
+      "carb": 33,
+      "status": "estimated",
       "time": "17:25"
     }
   ],
