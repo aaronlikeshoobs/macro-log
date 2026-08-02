@@ -772,7 +772,9 @@
       "carb": 175
     }
   },
-  "dayTypes": {},
+  "dayTypes": {
+    "2026-08-01": "longRide"
+  },
   "targets": {
     "cal": 1750,
     "protein": 170,
