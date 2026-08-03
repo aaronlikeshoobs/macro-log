@@ -740,30 +740,6 @@
       "carb": 33,
       "status": "estimated",
       "time": "17:25"
-    },
-    {
-      "id": "e-1785789804177-qxw22",
-      "date": "2026-08-03",
-      "meal": "Lunch",
-      "name": "Gluten free bagel",
-      "cal": 210,
-      "protein": 7,
-      "fat": 2,
-      "carb": 41,
-      "status": "estimated",
-      "time": "13:43"
-    },
-    {
-      "id": "e-1785789808505-ztiy2",
-      "date": "2026-08-03",
-      "meal": "Lunch",
-      "name": "Philly plant cream cheese (2 tbsp)",
-      "cal": 100,
-      "protein": 3,
-      "fat": 9,
-      "carb": 2,
-      "status": "estimated",
-      "time": "13:43"
     }
   ],
   "targetPresets": {
