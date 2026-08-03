@@ -812,6 +812,18 @@
       "carb": 30,
       "status": "estimated",
       "time": "14:09"
+    },
+    {
+      "id": "e-1785791368649-vnx89",
+      "date": "2026-08-03",
+      "meal": "Lunch",
+      "name": "Safe Catch tuna in water",
+      "cal": 60,
+      "protein": 13,
+      "fat": 0,
+      "carb": 0,
+      "status": "estimated",
+      "time": "14:09"
     }
   ],
   "targetPresets": {
