@@ -740,6 +740,18 @@
       "carb": 33,
       "status": "estimated",
       "time": "17:25"
+    },
+    {
+      "id": "e-1785789798050-uwrk5",
+      "date": "2026-08-03",
+      "meal": "Lunch",
+      "name": "Scrambled eggs (2 large)",
+      "cal": 180,
+      "protein": 13,
+      "fat": 14,
+      "carb": 1,
+      "status": "estimated",
+      "time": "13:43"
     }
   ],
   "targetPresets": {
