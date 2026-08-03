@@ -788,6 +788,18 @@
       "carb": 0,
       "status": "estimated",
       "time": "14:09"
+    },
+    {
+      "id": "e-1785791361136-nv3kb",
+      "date": "2026-08-03",
+      "meal": "Lunch",
+      "name": "Dave's Killer Bread",
+      "cal": 160,
+      "protein": 6,
+      "fat": 2,
+      "carb": 30,
+      "status": "estimated",
+      "time": "14:09"
     }
   ],
   "targetPresets": {
