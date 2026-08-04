@@ -826,15 +826,15 @@
       "time": "14:09"
     },
     {
-      "id": "e-1785805580486-x3zsb",
+      "id": "e-1785805582759-0-vnw",
       "date": "2026-08-03",
       "meal": "Snack",
       "name": "Vega vegan protein shake",
-      "cal": null,
-      "protein": null,
-      "fat": null,
-      "carb": null,
-      "status": "estimating",
+      "cal": 150,
+      "protein": 20,
+      "fat": 2,
+      "carb": 5,
+      "status": "estimated",
       "time": "18:06"
     }
   ],
