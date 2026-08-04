@@ -836,6 +836,18 @@
       "carb": 6,
       "status": "estimated",
       "time": "18:06"
+    },
+    {
+      "id": "e-1785814038401-lk15o",
+      "date": "2026-08-03",
+      "meal": "Dinner",
+      "name": "6.9 ounce beef hamburger on a bun with mayo and mustard. Side of roasted Asian sweet potatoes and roasted zucchini with onion. 1/2 a reality Cheque beer by moonlight brewery",
+      "cal": null,
+      "protein": null,
+      "fat": null,
+      "carb": null,
+      "status": "estimating",
+      "time": "20:27"
     }
   ],
   "targetPresets": {
