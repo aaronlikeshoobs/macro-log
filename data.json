@@ -920,6 +920,18 @@
       "carb": 5,
       "status": "estimated",
       "time": "20:27"
+    },
+    {
+      "id": "e-1785851170826-l7bsh",
+      "date": "2026-08-03",
+      "meal": "Snack",
+      "name": "Cliff bar",
+      "cal": null,
+      "protein": null,
+      "fat": null,
+      "carb": null,
+      "status": "estimating",
+      "time": "06:46"
     }
   ],
   "targetPresets": {
