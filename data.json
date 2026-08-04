@@ -922,15 +922,15 @@
       "time": "20:27"
     },
     {
-      "id": "e-1785851170826-l7bsh",
+      "id": "e-1785851174453-0-lru",
       "date": "2026-08-03",
       "meal": "Snack",
-      "name": "Cliff bar",
-      "cal": null,
-      "protein": null,
-      "fat": null,
-      "carb": null,
-      "status": "estimating",
+      "name": "Cliff Bar",
+      "cal": 250,
+      "protein": 9,
+      "fat": 6,
+      "carb": 41,
+      "status": "estimated",
       "time": "06:46"
     }
   ],
