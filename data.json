@@ -830,10 +830,10 @@
       "date": "2026-08-03",
       "meal": "Snack",
       "name": "Vega vegan protein shake",
-      "cal": 150,
-      "protein": 20,
-      "fat": 2,
-      "carb": 5,
+      "cal": 180,
+      "protein": 30,
+      "fat": 3,
+      "carb": 6,
       "status": "estimated",
       "time": "18:06"
     }
