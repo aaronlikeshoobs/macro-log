@@ -953,7 +953,8 @@
     }
   },
   "dayTypes": {
-    "2026-08-01": "longRide"
+    "2026-08-01": "longRide",
+    "2026-08-03": "heavyLower"
   },
   "targets": {
     "cal": 1750,
