@@ -970,15 +970,51 @@
       "time": "09:26"
     },
     {
-      "id": "e-1785879985734-vadoj",
+      "id": "e-1785879988956-0-h7m",
       "date": "2026-08-04",
       "meal": "Lunch",
-      "name": "Jerk chicken thigh on a bun with avocado dairy free crema",
-      "cal": null,
-      "protein": null,
-      "fat": null,
-      "carb": null,
-      "status": "estimating",
+      "name": "jerk chicken thigh",
+      "cal": 320,
+      "protein": 28,
+      "fat": 22,
+      "carb": 0,
+      "status": "estimated",
+      "time": "14:46"
+    },
+    {
+      "id": "e-1785879988956-1-86s",
+      "date": "2026-08-04",
+      "meal": "Lunch",
+      "name": "bun",
+      "cal": 140,
+      "protein": 4,
+      "fat": 2,
+      "carb": 27,
+      "status": "estimated",
+      "time": "14:46"
+    },
+    {
+      "id": "e-1785879988956-2-2lv",
+      "date": "2026-08-04",
+      "meal": "Lunch",
+      "name": "avocado",
+      "cal": 120,
+      "protein": 1,
+      "fat": 11,
+      "carb": 6,
+      "status": "estimated",
+      "time": "14:46"
+    },
+    {
+      "id": "e-1785879988956-3-8o5",
+      "date": "2026-08-04",
+      "meal": "Lunch",
+      "name": "dairy free crema",
+      "cal": 100,
+      "protein": 1,
+      "fat": 11,
+      "carb": 2,
+      "status": "estimated",
       "time": "14:46"
     }
   ],
