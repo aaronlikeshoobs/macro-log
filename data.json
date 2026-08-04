@@ -932,6 +932,18 @@
       "carb": 41,
       "status": "estimated",
       "time": "06:46"
+    },
+    {
+      "id": "e-1785860814066-gj43w",
+      "date": "2026-08-04",
+      "meal": "Breakfast",
+      "name": "1 slice of Dave’s bread with strawberry goji jam and 3 scrambled eggs",
+      "cal": null,
+      "protein": null,
+      "fat": null,
+      "carb": null,
+      "status": "estimating",
+      "time": "09:26"
     }
   ],
   "targetPresets": {
