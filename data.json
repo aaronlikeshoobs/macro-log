@@ -968,6 +968,18 @@
       "carb": 2,
       "status": "estimated",
       "time": "09:26"
+    },
+    {
+      "id": "e-1785879985734-vadoj",
+      "date": "2026-08-04",
+      "meal": "Lunch",
+      "name": "Jerk chicken thigh on a bun with avocado dairy free crema",
+      "cal": null,
+      "protein": null,
+      "fat": null,
+      "carb": null,
+      "status": "estimating",
+      "time": "14:46"
     }
   ],
   "targetPresets": {
