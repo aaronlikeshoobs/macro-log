@@ -934,15 +934,39 @@
       "time": "06:46"
     },
     {
-      "id": "e-1785860814066-gj43w",
+      "id": "e-1785860816782-0-snj",
       "date": "2026-08-04",
       "meal": "Breakfast",
-      "name": "1 slice of Dave’s bread with strawberry goji jam and 3 scrambled eggs",
-      "cal": null,
-      "protein": null,
-      "fat": null,
-      "carb": null,
-      "status": "estimating",
+      "name": "Dave's Killer Bread slice",
+      "cal": 100,
+      "protein": 5,
+      "fat": 2,
+      "carb": 18,
+      "status": "estimated",
+      "time": "09:26"
+    },
+    {
+      "id": "e-1785860816782-1-qjk",
+      "date": "2026-08-04",
+      "meal": "Breakfast",
+      "name": "Strawberry goji jam",
+      "cal": 50,
+      "protein": 0,
+      "fat": 0,
+      "carb": 13,
+      "status": "estimated",
+      "time": "09:26"
+    },
+    {
+      "id": "e-1785860816782-2-5tw",
+      "date": "2026-08-04",
+      "meal": "Breakfast",
+      "name": "Scrambled eggs (3)",
+      "cal": 210,
+      "protein": 18,
+      "fat": 15,
+      "carb": 2,
+      "status": "estimated",
       "time": "09:26"
     }
   ],
