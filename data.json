@@ -1018,15 +1018,27 @@
       "time": "14:46"
     },
     {
-      "id": "e-1785894476079-3t4gj",
+      "id": "e-1785894478839-0-964",
       "date": "2026-08-04",
       "meal": "Snack",
-      "name": "Gin martini",
-      "cal": null,
-      "protein": null,
-      "fat": null,
-      "carb": null,
-      "status": "estimating",
+      "name": "gin",
+      "cal": 110,
+      "protein": 0,
+      "fat": 0,
+      "carb": 0,
+      "status": "estimated",
+      "time": "18:47"
+    },
+    {
+      "id": "e-1785894478839-1-q7z",
+      "date": "2026-08-04",
+      "meal": "Snack",
+      "name": "dry vermouth",
+      "cal": 15,
+      "protein": 0,
+      "fat": 0,
+      "carb": 0,
+      "status": "estimated",
       "time": "18:47"
     }
   ],
