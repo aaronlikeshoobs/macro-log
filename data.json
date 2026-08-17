@@ -1088,6 +1088,18 @@
       "carb": 0,
       "status": "estimated",
       "time": "11:24"
+    },
+    {
+      "id": "e-1786991098733-0-x2y",
+      "date": "2026-08-17",
+      "meal": "Snack",
+      "name": "small banana",
+      "cal": 90,
+      "protein": 1,
+      "fat": 0,
+      "carb": 23,
+      "status": "estimated",
+      "time": "11:24"
     }
   ],
   "targetPresets": {
