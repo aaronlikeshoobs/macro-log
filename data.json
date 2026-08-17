@@ -1100,6 +1100,18 @@
       "carb": 23,
       "status": "estimated",
       "time": "11:24"
+    },
+    {
+      "id": "e-1787001543569-qlyvx",
+      "date": "2026-08-17",
+      "meal": "Lunch",
+      "name": "Homemade pork tenderloin sandwich on a sesame roll with mayonnaise and mustard and a side of cantaloupe",
+      "cal": null,
+      "protein": null,
+      "fat": null,
+      "carb": null,
+      "status": "estimating",
+      "time": "14:19"
     }
   ],
   "targetPresets": {
