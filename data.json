@@ -1064,6 +1064,30 @@
       "carb": 1,
       "status": "estimated",
       "time": "10:51"
+    },
+    {
+      "id": "e-1786991080475-0-4zd",
+      "date": "2026-08-17",
+      "meal": "Snack",
+      "name": "Vega protein shake",
+      "cal": 170,
+      "protein": 20,
+      "fat": 6,
+      "carb": 7,
+      "status": "estimated",
+      "time": "11:24"
+    },
+    {
+      "id": "e-1786991080475-1-b3v",
+      "date": "2026-08-17",
+      "meal": "Snack",
+      "name": "creatine monohydrate",
+      "cal": 0,
+      "protein": 0,
+      "fat": 0,
+      "carb": 0,
+      "status": "estimated",
+      "time": "11:24"
     }
   ],
   "targetPresets": {
