@@ -1130,9 +1130,9 @@
       "date": "2026-08-17",
       "meal": "Lunch",
       "name": "mayonnaise",
-      "cal": 180,
+      "cal": 90,
       "protein": 0,
-      "fat": 20,
+      "fat": 10,
       "carb": 0,
       "status": "estimated",
       "time": "14:19"
