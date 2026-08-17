@@ -1040,6 +1040,30 @@
       "carb": 0,
       "status": "estimated",
       "time": "18:47"
+    },
+    {
+      "id": "e-1786989090829-0-dn1",
+      "date": "2026-08-17",
+      "meal": "Breakfast",
+      "name": "scrambled eggs (2)",
+      "cal": 180,
+      "protein": 16,
+      "fat": 13,
+      "carb": 1,
+      "status": "estimated",
+      "time": "10:51"
+    },
+    {
+      "id": "e-1786989090829-1-bbt",
+      "date": "2026-08-17",
+      "meal": "Breakfast",
+      "name": "chicken breakfast sausage (1 large)",
+      "cal": 150,
+      "protein": 18,
+      "fat": 8,
+      "carb": 1,
+      "status": "estimated",
+      "time": "10:51"
     }
   ],
   "targetPresets": {
