@@ -1232,6 +1232,18 @@
       "carb": 5,
       "status": "estimated",
       "time": "20:07"
+    },
+    {
+      "id": "e-1787026929980-e07qj",
+      "date": "2026-08-17",
+      "meal": "Snack",
+      "name": "Kirkland protein bar",
+      "cal": null,
+      "protein": null,
+      "fat": null,
+      "carb": null,
+      "status": "estimating",
+      "time": "21:22"
     }
   ],
   "targetPresets": {
