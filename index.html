@@ -30,7 +30,7 @@
     --font-mono: 'IBM Plex Mono', 'SF Mono', ui-monospace, Menlo, monospace;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; padding: 0; background: var(--bg); overscroll-behavior-y: none; overflow-anchor: none; }
+  html, body { margin: 0; padding: 0; background: var(--bg); overscroll-behavior-y: none; overflow-anchor: none; overflow-x: hidden; }
   body { font-family: var(--font-body); color: var(--ink); touch-action: manipulation; }
   #mt-root { padding: 22px 18px 110px; max-width: 640px; margin: 0 auto; min-height: 100vh; }
   button { touch-action: manipulation; }
@@ -78,8 +78,9 @@
   .mt-edit-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 15px; padding: 10px 6px; line-height: 1; min-width: 36px; min-height: 44px; }
   .mt-log-editing { flex-direction: column; align-items: stretch; gap: 8px; padding: 12px 0; }
   .mt-edit-input { font-family: var(--font-body); border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 10px 10px; font-size: 15px; border-radius: 6px; min-height: 42px; }
-  .mt-edit-macros { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-  .mt-edit-macros .mt-edit-input { font-family: var(--font-mono); text-align: center; padding: 10px 4px; }
+  .mt-edit-macros { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .mt-edit-macros .mt-edit-input { min-width: 0; font-family: var(--font-mono); text-align: center; padding: 10px 4px; }
+  .mt-edit-macro-label { font-family: var(--font-mono); font-size: 8px; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 3px; letter-spacing: 0.04em; }
   .mt-edit-actions { display: flex; gap: 8px; }
   .mt-edit-save, .mt-edit-cancel, .mt-rf-log, .mt-rf-cancel { flex: 1; font-family: var(--font-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; padding: 10px 8px; border-radius: 6px; cursor: pointer; min-height: 40px; border: 1px solid var(--line); }
   .mt-edit-save, .mt-rf-log { background: var(--ink); color: var(--bg); border-color: var(--ink); }
@@ -343,10 +344,10 @@
           <div class="mt-form-name" style="flex:1 1 100%;"><label>Name</label><input class="mt-edit-input" id="rf-name" value="${escapeHtml(f.name)}" /></div>
         </div>
         <div class="mt-edit-macros" style="margin-bottom:10px;">
-          <input class="mt-edit-input" id="rf-cal" type="number" inputmode="numeric" value="${f.cal}" placeholder="kcal" />
-          <input class="mt-edit-input" id="rf-protein" type="number" inputmode="numeric" value="${f.protein}" placeholder="P" />
-          <input class="mt-edit-input" id="rf-fat" type="number" inputmode="numeric" value="${f.fat}" placeholder="F" />
-          <input class="mt-edit-input" id="rf-carb" type="number" inputmode="numeric" value="${f.carb}" placeholder="C" />
+          <div><label class="mt-edit-macro-label">Kcal</label><input class="mt-edit-input" id="rf-cal" type="number" inputmode="decimal" value="${f.cal}" placeholder="kcal" /></div>
+          <div><label class="mt-edit-macro-label">Protein</label><input class="mt-edit-input" id="rf-protein" type="number" inputmode="decimal" value="${f.protein}" placeholder="P" /></div>
+          <div><label class="mt-edit-macro-label">Fat</label><input class="mt-edit-input" id="rf-fat" type="number" inputmode="decimal" value="${f.fat}" placeholder="F" /></div>
+          <div><label class="mt-edit-macro-label">Carbs</label><input class="mt-edit-input" id="rf-carb" type="number" inputmode="decimal" value="${f.carb}" placeholder="C" /></div>
         </div>
         <div class="mt-edit-actions">
           <button class="mt-rf-log" id="rf-log-btn">Log this</button>
@@ -422,10 +423,10 @@
         <div class="mt-log-item mt-log-editing">
           <input class="mt-edit-input" data-field="name" value="${escapeHtml(e.name)}" />
           <div class="mt-edit-macros">
-            <input class="mt-edit-input" data-field="cal" type="number" inputmode="numeric" value="${e.cal ?? ''}" placeholder="kcal" />
-            <input class="mt-edit-input" data-field="protein" type="number" inputmode="numeric" value="${e.protein ?? ''}" placeholder="P" />
-            <input class="mt-edit-input" data-field="fat" type="number" inputmode="numeric" value="${e.fat ?? ''}" placeholder="F" />
-            <input class="mt-edit-input" data-field="carb" type="number" inputmode="numeric" value="${e.carb ?? ''}" placeholder="C" />
+            <div><label class="mt-edit-macro-label">Kcal</label><input class="mt-edit-input" data-field="cal" type="number" inputmode="decimal" value="${e.cal ?? ''}" placeholder="kcal" /></div>
+            <div><label class="mt-edit-macro-label">Protein</label><input class="mt-edit-input" data-field="protein" type="number" inputmode="decimal" value="${e.protein ?? ''}" placeholder="P" /></div>
+            <div><label class="mt-edit-macro-label">Fat</label><input class="mt-edit-input" data-field="fat" type="number" inputmode="decimal" value="${e.fat ?? ''}" placeholder="F" /></div>
+            <div><label class="mt-edit-macro-label">Carbs</label><input class="mt-edit-input" data-field="carb" type="number" inputmode="decimal" value="${e.carb ?? ''}" placeholder="C" /></div>
           </div>
           <div class="mt-edit-actions">
             <button class="mt-edit-save" data-id="${e.id}">Save</button>
