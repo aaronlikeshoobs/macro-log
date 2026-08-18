@@ -1172,6 +1172,18 @@
       "carb": 8,
       "status": "estimated",
       "time": "18:33"
+    },
+    {
+      "id": "e-1787022026925-vlxsw",
+      "date": "2026-08-17",
+      "meal": "Dinner",
+      "name": "Homemade lemon pepper chicken breast with skin on, broccolini and a rice and quinoa mix",
+      "cal": null,
+      "protein": null,
+      "fat": null,
+      "carb": null,
+      "status": "estimating",
+      "time": "20:00"
     }
   ],
   "targetPresets": {
