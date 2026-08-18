@@ -1174,15 +1174,39 @@
       "time": "18:33"
     },
     {
-      "id": "e-1787022026925-vlxsw",
+      "id": "e-1787022029748-0-chu",
       "date": "2026-08-17",
       "meal": "Dinner",
-      "name": "Homemade lemon pepper chicken breast with skin on, broccolini and a rice and quinoa mix",
-      "cal": null,
-      "protein": null,
-      "fat": null,
-      "carb": null,
-      "status": "estimating",
+      "name": "Lemon pepper chicken breast with skin",
+      "cal": 320,
+      "protein": 35,
+      "fat": 18,
+      "carb": 0,
+      "status": "estimated",
+      "time": "20:00"
+    },
+    {
+      "id": "e-1787022029748-1-zk5",
+      "date": "2026-08-17",
+      "meal": "Dinner",
+      "name": "Broccolini",
+      "cal": 35,
+      "protein": 4,
+      "fat": 0,
+      "carb": 6,
+      "status": "estimated",
+      "time": "20:00"
+    },
+    {
+      "id": "e-1787022029748-2-gpp",
+      "date": "2026-08-17",
+      "meal": "Dinner",
+      "name": "Rice and quinoa mix",
+      "cal": 190,
+      "protein": 4,
+      "fat": 2,
+      "carb": 38,
+      "status": "estimated",
       "time": "20:00"
     }
   ],
